@@ -1,0 +1,24 @@
+#ignore script log files
+*.sh.*
+*.log
+#ignore data files
+*.faa*
+*.fa
+*.fasta
+*.raxml.bestTree
+*.raxml.bestModel
+*.raxml.bootstraps
+*.raxml.log
+*.raxml.mlTrees
+*.raxml.rba
+*.raxml.startTree
+*.raxml.bestTreeCollapsed
+*.raxml.reduced.partition
+*.raxml.reduced.phy
+#ignore data directories
+data/
+results/
+scratch
+#ignore plots
+*.tiff
+*.png
