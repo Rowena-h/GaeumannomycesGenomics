@@ -5,7 +5,7 @@
 #SBATCH --mem 150000				# memory pool for all cores
 #SBATCH --output ../scratch/logs/%x.o%j		# STDOUT and STDERR
 #SBATCH --mail-type=END,FAIL			# notifications for job done & fail
-#SBATCH --mail-user=sabrina.ward@earlham.ac.uk	# send-to address
+#SBATCH --mail-user=rowena.hill@earlham.ac.uk	# send-to address
 
 source gcc-6.2.0
 source zlib-1.2.11
