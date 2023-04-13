@@ -3,6 +3,8 @@
 README IN PROGRESS...
 Insert schematic
 
+> Paper citation
+
 The pipeline was written for and run on Norwich BioScience Institutes' HPC cluster which uses the SLURM batch-queue system. This means that many of the bash scripts (`.sh` file endings) specify core allocation, run times and memory usage allocation that may need to be adapted for different platforms.
 
 ---
@@ -65,11 +67,11 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 5. `sbatch 005_concat.sh` concatenates gene alignments using [AMAS](https://github.com/marekborowiec/AMAS).
 6. `sbatch 006_raxmlng_speciestree.sh` builds ML species trees using RAXML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
 
-## 5 Phylogenomics
+## 6 Phylogenomics
 
 `cd 05_phylogenomics` :file_folder:
 
-1. `sbatch 001_orthofinder.sh` infers orthologous groups using [OrthoFinder](https://github.com/davidemms/OrthoFinder).
+1. `sbatch 001_orthofinder.sh` adds outgroup to previous [OrthoFinder](https://github.com/davidemms/OrthoFinder) GENESPACE run.
 2. `sbatch 002_align_singlecopy.sh` submits batch array jobs to align all single-copy orthologues using MAFFT.
 3. `sbatch 003_concat.sh` concatenates single-copy orthologue alignments using AMAS.
 4. `sbatch 004_raxmlng.sh` builds genome-scale ML species trees using RAXML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
