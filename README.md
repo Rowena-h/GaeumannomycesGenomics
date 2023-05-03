@@ -33,7 +33,7 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 ### Filtering
 
 9. `sbatch -a 1-9 009_kat_sect.sh` estimates assembly coverage levels using KAT.
-10. `sbatch -a 1-9 010_filter_lowcov.sh` filters out small, low coverage sequences using a custom script, *.
+10. `sbatch -a 1-9 010_filter_lowcov.sh` filters out small, low coverage sequences using a custom script, `scripts/low_cov_deleter.R`.
 
 ### Final assessment
 
@@ -67,11 +67,11 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 5. `sbatch 005_concat.sh` concatenates gene alignments using [AMAS](https://github.com/marekborowiec/AMAS).
 6. `sbatch 006_raxmlng_speciestree.sh` builds ML species trees using RAXML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
 
-## 6 Phylogenomics
+## 5 Phylogenomics
 
 `cd 05_phylogenomics` :file_folder:
 
-1. `sbatch 001_orthofinder.sh` adds outgroup to previous [OrthoFinder](https://github.com/davidemms/OrthoFinder) GENESPACE run.
-2. `sbatch 002_align_singlecopy.sh` submits batch array jobs to align all single-copy orthologues using MAFFT.
-3. `sbatch 003_concat.sh` concatenates single-copy orthologue alignments using AMAS.
+1. `sbatch 001_orthofinder.sh` infers phylogenetic hierarchical orthogroups (HOGs) using [OrthoFinder](https://github.com/davidemms/OrthoFinder).
+2. `sbatch 002_align_singlecopy.sh` submits batch array jobs to align all single-copy HOGs using MAFFT and trim using [trimAl](http://trimal.cgenomics.org/).
+3. `sbatch 003_concat.sh` concatenates single-copy HOG alignments using AMAS.
 4. `sbatch 004_raxmlng.sh` builds genome-scale ML species trees using RAXML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
