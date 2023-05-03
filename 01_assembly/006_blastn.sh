@@ -19,7 +19,7 @@ mkdir -p ${out_dir}
 blastn \
     -task megablast \
     -db /ei/public/databases/blast/ncbi/nt_20210521/nt \
-    -query ..scratch/hifiasm-assemblies/${strain_file}/${strain_file}.bp.p_ctg.fa \
+    -query ../scratch/hifiasm-assemblies/${strain_file}/${strain_file}.asm.bp.p_ctg.fa \
     -out ${out_dir}/${strain_file}_hits \
     -outfmt "6 qseqid staxids bitscore std" \
     -max_target_seqs 10 \

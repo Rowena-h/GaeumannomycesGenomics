@@ -17,12 +17,12 @@ out_dir=../scratch/007_readsmap/${strain_file}
 mkdir -p ${out_dir}
 
 #Maps reads to assembly
-minimap2 \
-	-ax map-hifi -t ${SLURM_CPUS_PER_TASK} \
-	../scratch/hifiasm-assemblies/${strain_file}/${strain_file}.asm.bp.p_ctg.fa \
-	../scratch/hifi-reads/${strain_file}.fastq.gz > ${out_dir}/${strain_file}_aln.sam
+#minimap2 \
+#	-ax map-hifi -t ${SLURM_CPUS_PER_TASK} \
+#	../scratch/hifiasm-assemblies/${strain_file}/${strain_file}.asm.bp.p_ctg.fa \
+#	../scratch/hifi-reads/*${strain_file}_hifi.fastq.gz > ${out_dir}/${strain_file}_aln.sam
 
 #Convert to sorted, indexed BAM
-samtools view -S -b ${out_dir}/${sample}/${sample}_aln.sam > ${out_dir}/${sample}/${sample}_aln.bam
-samtools sort ${out_dir}/${sample}/${sample}_aln.bam -o ${out_dir}/${sample}/${sample}_aln.sorted.bam
-samtools index ${out_dir}/${sample}/${sample}_aln.sorted.bam
+samtools view -S -b ${out_dir}/${strain_file}_aln.sam -@ ${SLURM_CPUS_PER_TASK} > ${out_dir}/${strain_file}_aln.bam
+samtools sort ${out_dir}/${strain_file}_aln.bam -@ ${SLURM_CPUS_PER_TASK} -o ${out_dir}/${strain_file}_aln.sorted.bam
+samtools index ${out_dir}/${strain_file}_aln.sorted.bam

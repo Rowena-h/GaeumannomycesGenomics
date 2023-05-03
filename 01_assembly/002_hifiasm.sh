@@ -20,7 +20,7 @@ mkdir -p ${out_dir}
 ~/programmes/hifiasm/hifiasm \
 	-o ${out_dir}/${strain_file}.asm \
 	-t ${SLURM_CPUS_PER_TASK} \
-	-l0 ../scratch/hifi-reads/${strain_file}.fastq.gz
+	-l0 ../scratch/hifi-reads/*${strain_file}_hifi.fastq.gz
 
 #Convert hifiasm GFA files to fasta files
 awk '/^S/{print ">"$2;print $3}' ${out_dir}/${strain_file}.asm.bp.p_ctg.gfa > ${out_dir}/${strain_file}.asm.bp.p_ctg.fa
