@@ -12,10 +12,10 @@ source blast-2.7.1
 
 out_dir=extract_genes
 
-for strain in Gt-19d1 Gt-23d Gt-3aA1 Gt-4e Gt-8d Gt-CB1 Gt14LH10
+for strain in Gt-19d1 Gt-23d Gt-3aA1 Gt-4e Gt-8d Gt-CB1 Gt14LH10 PO86440
 do
 		
-	assembly=$(ls ../scratch/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/${strain}/Reference/Genome/*.{fa,fasta,fas})
+	assembly=$(ls ../scratch/hifiasm-assemblies/${strain}/${strain}.asm.bp.p_ctg.fa)
 
 	for marker in $(cat markers)
 	do
