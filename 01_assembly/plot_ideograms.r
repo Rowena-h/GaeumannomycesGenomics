@@ -119,5 +119,10 @@ for (i in 1:length(strains$strain)) {
 
 #Write to file
 tiff(paste0("telomeres_Gt-", Sys.Date(), ".tiff"), width=7, height=4, units="in", compression="lzw", res=600)
+ggarrange(`gg.karyogram.Gt-4e`, `gg.karyogram.Gt-8d`, `gg.karyogram.Gt-23d`, `gg.karyogram.Gt-19d1`, `gg.karyogram.Gt-LH10`)
+dev.off()
+
+#Write to file
+tiff(paste0("telomeres-", Sys.Date(), ".tiff"), width=7, height=6, units="in", compression="lzw", res=600)
 ggarrange(plotlist=mget(ls(pattern="gg.karyogram.")))
 dev.off()
