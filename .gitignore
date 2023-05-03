@@ -16,8 +16,8 @@
 *.raxml.reduced.partition
 *.raxml.reduced.phy
 #ignore data directories
-data/
-results/
+data
+results
 scratch
 #ignore plots
 *.tiff
