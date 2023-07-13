@@ -75,6 +75,7 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 2. `sbatch 002_align_singlecopy.sh` submits batch array jobs to align all single-copy HOGs using MAFFT and trim using [trimAl](http://trimal.cgenomics.org/).
 3. `sbatch 003_concat.sh` concatenates single-copy HOG alignments using AMAS.
 4. `sbatch 004_raxmlng.sh` builds genome-scale ML species trees using RAXML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
+5. Script to plot figure: `plot_trees.R`
 
 ## 6 Synteny and structure
 
