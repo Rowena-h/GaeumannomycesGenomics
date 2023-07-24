@@ -1,0 +1,145 @@
+#!/bin/bash
+#Script to filter protein set for candidate effectors
+
+display_usage() {
+	echo "USAGE: $0 sample_prefix inputs_dir"
+    exit
+}
+
+if [ -z "$1" ]
+then
+    display_usage
+    exit
+fi
+
+#Function to check file endings
+check_file() {
+	file=$1
+
+	if dos2unix < $file | cmp - $file; then
+		:
+	else
+		echo "Provided file $file has wrong line endings" 2>&1 | tee -a CSEPfilter_${sample}.log
+		dos2unix ${file} 2>&1 | tee -a CSEPfilter_${sample}.log
+	fi
+}
+
+#Function to filter main list of names by another list
+filter_out() {
+	filter_list=$1
+	main_list=$2
+	out_list=$3
+
+	awk 'NR==FNR{a[$0]=1;next}!a[$0]' $filter_list $main_list > $out_list
+}
+
+#Function to find common names between two lists
+find_common() {
+	second_list=$1
+	main_list=$2
+	out_list=$3
+
+	comm -12 <(sort $second_list) <(sort $main_list) > $out_list
+}
+
+sample=$1
+inputs_dir=$2
+tmp_dir=$(mktemp -d)
+
+echo "--------------------------------------------------" 2>&1 | tee CSEPfilter_${sample}.log
+echo "                                                  " 2>&1 | tee CSEPfilter_${sample}.log
+echo "                   CSEPfilter v2                  " 2>&1 | tee CSEPfilter_${sample}.log
+echo "                                                  " 2>&1 | tee CSEPfilter_${sample}.log
+echo "--------------------------------------------------" 2>&1 | tee CSEPfilter_${sample}.log
+echo "                                                  " 2>&1 | tee CSEPfilter_${sample}.log
+echo "--------------------------------------------------" 2>&1 | tee CSEPfilter_${sample}.log
+echo "Running sample ${sample}" 2>&1 | tee CSEPfilter_${sample}.log
+
+echo "Checking input files..."
+
+for programme in deeploc deepsig effectorp1 effectorp2 effectorp3 phobius ps_scan signalp3 signalp4 signalp6 targetp tmhmm
+do
+	check_file ${inputs_dir}/${sample}*${programme}*
+done
+
+echo "Extracting results..."
+
+#SignalP3
+awk '$5=="Y" && $7=="Y" {print $1}' ${inputs_dir}/${sample}_signalp3.tsv > ${tmp_dir}/${sample}_signalp3SP
+#SignalP4
+awk '$10=="Y" {print $1}' ${inputs_dir}/${sample}_signalp4.tsv > ${tmp_dir}/${sample}_signalp4SP
+#SignalP6
+awk -F '\t' '$2=="SP" {print $1}' ${inputs_dir}/${sample}_signalp6.tsv | sed 's/ .*//' > ${tmp_dir}/${sample}_signalp6SP
+#TargetP (signal peptides)
+awk -F '\t' '$2=="SP" {print $1}' ${inputs_dir}/${sample}_summary.targetp2 > ${tmp_dir}/${sample}_targetpSP
+#DeepSig
+awk -F '\t' '$2=="SignalPeptide" {print $1}' ${inputs_dir}/${sample}_deepsig.tsv > ${tmp_dir}/${sample}_deepsigSP
+#Phobius (signal peptides)
+grep -i -B 1 "SIGNAL" ${inputs_dir}/${sample}_phobius.txt | grep "ID" | awk '{print $2}' > ${tmp_dir}/${sample}_phobiusSP
+#TMHMM
+grep "Number of predicted TMHs" ${inputs_dir}/${sample}_tmhmm.txt | awk '{ $NF = "\t" $NF; print }' | column -t -s $'\t' | awk '$7>1 { print $2}' > ${tmp_dir}/${sample}_tmhmmTMs
+#Phobius (TMs)
+awk 'NR==1{printf $0" ";next}{printf /^ID/ ? "\n"$0" " : $0}' ${inputs_dir}/${sample}_phobius.txt > ${tmp_dir}/${sample}_phobiustmp
+grep -o -n "TRANSMEM" ${tmp_dir}/${sample}_phobiustmp |\
+ cut -d : -f 1 | uniq -c | awk '$1>1 {print $2}' |\
+ sed '/[^0-9]/d;s/.$/&p/' | sed -nf - ${tmp_dir}/${sample}_phobiustmp |\
+ awk '{print $2}' > ${tmp_dir}/${sample}_phobiusTMs
+#ps_scan
+grep ">" ${inputs_dir}/${sample}_ps_scan.tsv | awk '{print $1}' | tr -d '>' > ${tmp_dir}/${sample}_psscan
+#DeepLoc
+awk -F '\t' '$2=="Extracellular" || $2=="Cytoplasm" {print $1}' ${inputs_dir}/${sample}_deeploc.txt | sed 's/ .*//' > ${tmp_dir}/${sample}_deeploc
+#EffectorP1
+awk -F '\t' '$2=="Effector" {print $1}' ${inputs_dir}/${sample}_effectorp1.tsv | sed 's/ .*//' > ${tmp_dir}/${sample}_effectorp1
+#EffectorP2
+awk -F '\t' '$2=="Effector" {print $1}' ${inputs_dir}/${sample}_effectorp2.tsv | sed 's/ .*//' > ${tmp_dir}/${sample}_effectorp2
+#EffectorP3
+awk -F '\t' '$4=="-" {print $1}' ${inputs_dir}/${sample}_effectorp3.tsv | sed 's/ .*//' > ${tmp_dir}/${sample}_effectorp3
+
+echo "Total number of proteins: `grep "^[^#;]" ${inputs_dir}/${sample}_signalp3.tsv | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "--------------------------------------------------"
+
+echo ""
+echo "Cross-checking signal peptide prediction" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "--------------------------------------------------"
+find_common ${tmp_dir}/${sample}_signalp3SP ${tmp_dir}/${sample}_signalp4SP ${tmp_dir}/SPfilter1
+find_common ${tmp_dir}/SPfilter1 ${tmp_dir}/${sample}_signalp6SP ${tmp_dir}/SPfilter2
+echo "SignalP3, 4, 6 number of signal peptide proteins: `cat ${tmp_dir}/SPfilter2 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+find_common ${tmp_dir}/SPfilter2 ${tmp_dir}/${sample}_targetpSP ${tmp_dir}/SPfilter3
+echo "TargetP also SP: `cat ${tmp_dir}/SPfilter3 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+find_common ${tmp_dir}/SPfilter3 ${tmp_dir}/${sample}_deepsigSP ${tmp_dir}/SPfilter4
+echo "DeepSig also SP: `cat ${tmp_dir}/SPfilter4 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+find_common ${tmp_dir}/SPfilter4 ${tmp_dir}/${sample}_phobiusSP ${tmp_dir}/SPfilter5
+echo "Phobius also SP: `cat ${tmp_dir}/SPfilter5 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "--------------------------------------------------"
+
+echo ""
+echo "Removing proteins with >1 transmembrane domains" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "-----------------------------------------------"
+filter_out ${tmp_dir}/${sample}_tmhmmTMs ${tmp_dir}/SPfilter5 ${tmp_dir}/TMfilter1
+echo "TMHMM >1 TMs removed: `cat ${tmp_dir}/TMfilter1 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+filter_out ${tmp_dir}/${sample}_phobiusTMs ${tmp_dir}/TMfilter1 ${tmp_dir}/TMfilter2
+echo "Phobius >1 TMs removed: `cat ${tmp_dir}/TMfilter2 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "-----------------------------------------------"
+
+echo ""
+echo "Removing proteins with cellular localisation contradicting secretion" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "--------------------------------------------------------------------"
+filter_out ${tmp_dir}/${sample}_psscan ${tmp_dir}/TMfilter2 ${tmp_dir}/Locfilter1
+echo "Prosite ER localised removed: `cat ${tmp_dir}/Locfilter1 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+find_common ${tmp_dir}/Locfilter1 ${tmp_dir}/${sample}_deeploc ${tmp_dir}/Locfilter2
+echo "DeepLoc cytoplasmic or extracellular: `cat ${tmp_dir}/Locfilter2 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "--------------------------------------------------------------------"
+
+echo ""
+echo "Cross-checking effector prediction with EffectorP" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "-----------------------------------------------------------------"
+find_common ${tmp_dir}/Locfilter2 ${tmp_dir}/${sample}_effectorp1 ${tmp_dir}/effectorfilter1
+find_common ${tmp_dir}/effectorfilter1 ${tmp_dir}/${sample}_effectorp2 ${tmp_dir}/effectorfilter2
+find_common ${tmp_dir}/effectorfilter2 ${tmp_dir}/${sample}_effectorp3 ${tmp_dir}/effectorfilter3
+echo "EffectorP1, 2, 3 also effectors: `cat ${tmp_dir}/effectorfilter3 | wc -l`" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo "-----------------------------------------------------------------" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo ""
+
+cp ${tmp_dir}/effectorfilter3 ${sample}_CSEPs.txt
+echo "Final set of `cat ${sample}_CSEPs.txt | wc -l` potential effectors listed in file ${sample}_CSEPs.txt" 2>&1 | tee -a CSEPfilter_${sample}.log
+echo ""
