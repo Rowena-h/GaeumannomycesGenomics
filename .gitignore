@@ -5,6 +5,8 @@
 *.faa*
 *.fa
 *.fasta
+*.bam
+*.Rhistory
 *.raxml.bestTree
 *.raxml.bestModel
 *.raxml.bootstraps
@@ -15,6 +17,8 @@
 *.raxml.bestTreeCollapsed
 *.raxml.reduced.partition
 *.raxml.reduced.phy
+*.txt
+*.tsv
 #ignore data directories
 data
 results
@@ -22,3 +26,5 @@ scratch
 #ignore plots
 *.tiff
 *.png
+*.pdf
+*.svg
