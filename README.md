@@ -89,4 +89,14 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 1. `sbatch 001_genespace.sh` formats protein and gff3 files and submits `genespace.R` to infer synteny between strains using [GENESPACE](https://github.com/jtlovell/GENESPACE).
 2. `sbatch 002_gc.sh` calculates GC content in 1,000 bp windows across each genome using [bedtools](https://github.com/arq5x/bedtools2).
 3. `sbatch 003_contigs2pseudochromosomes.sh` replaces fragment names according to pseudochromosomes inferred from GENESPACE, as recorded in `pseudochromosomes.tsv`.
-4. Scripts to plot figures: `plot_ideograms.R`, `plot_genespace.R`, `plot_read_coverage.R`
+4. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
+ 
+## 7 Comparative genomics
+
+`cd 07_comparative_genomics` :file_folder:
+
+1. `sbatch 001_orthogroup_assignment.sh` `orthogroup_assigner.R`
+2. `sbatch 002_big-scape.sh`
+3. `sbatch 003_lifestyle_test.sh` `lifestyle_v_phylogeny.R` `permanova.sh` `run_edited.py`
+4. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
+
