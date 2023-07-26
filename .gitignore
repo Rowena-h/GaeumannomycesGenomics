@@ -4,6 +4,7 @@
 #ignore data files
 *.faa*
 *.fa
+*.fas
 *.fasta
 *.bam
 *.Rhistory
