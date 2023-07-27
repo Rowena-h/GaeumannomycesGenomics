@@ -48,7 +48,7 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 2. `002_reat.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat). This also makes use of [minos](https://github.com/EI-CoreBioinformatics/minos) and [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to consolidate and rank gene models.
 3. `003_multi-liftoff.txt` contains the commands used to perform an all-versus-all comparison of gene models across all strains using [LiftOff](https://github.com/agshumate/Liftoff).
 4. `004_rnammer.txt` contains the commands used to predict ribosomal RNA sub units using [RNAmmer](https://services.healthtech.dtu.dk/services/RNAmmer-1.2/).
-5. `005_minos.txt` contains the commands used to perform a final minos run using the LiftOff and Rnammer evidence.
+5. `005_minos.txt` contains the commands used to perform a final minos run using the LiftOff and RNAmmer evidence.
 
 ## 3 Functional annotation
 
