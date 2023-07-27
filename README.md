@@ -42,17 +42,28 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 14. `sbatch 014_quast.sh` reruns QUAST on the filtered assemblies.
 
 ## 2 Structural annotation
+`cd 02_structural_annotation` :file_folder:
+
+1. `001_eirepeat.txt` contains the commands used to predict and mask repeat content using the [eirepeat](https://github.com/EI-CoreBioinformatics/eirepeat) pipeline, which is comprised of [RepeatModeler](https://www.repeatmasker.org/RepeatModeler), [RepeatMasker](http://www.repeatmasker.org/RepeatMasker) and [Red](http://toolsmith.ens.utulsa.edu/).
+2. `002_reat.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat). This also makes use of [minos](https://github.com/EI-CoreBioinformatics/minos) and [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to consolidate and rank gene models.
+3. `003_multi-liftoff.txt` contains the commands used to perform an all-versus-all comparison of gene models across all strains using [LiftOff](https://github.com/agshumate/Liftoff).
+4. `004_rnammer.txt` contains the commands used to predict ribosomal RNA sub units using [RNAmmer](https://services.healthtech.dtu.dk/services/RNAmmer-1.2/).
+5. `005_minos.txt` contains the commands used to perform a final minos run using the LiftOff and Rnammer evidence.
 
 ## 3 Functional annotation
 
 `cd 03_functional_annotation` :file_folder:
 
-1. `sbatch -a 1-9 001_run_dbcan.sh` predicts CAZymes from protein sets using [run_dbcan](https://github.com/linnabrown/run_dbcan).
-2. `sbatch -a 1-9 002_antismash.sh` predicts secondary metabolites from protein sets using [antiSMASH](https://github.com/antismash/antismash).
-3. `./003_eggnog-mapper.sh` performs functional annotation of protein sets using [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper).
-4. `sbatch -a 1-9 004_CSEP_prediction.sh` submits a suite of tools that feed into CSEP prediction: `deepsig.sh` ([DeepSig](https://github.com/BolognaBiocomp/deepsig)), `deeploc.sh` ([DeepLoc](https://services.healthtech.dtu.dk/services/DeepLoc-1.0/)), `effectorp1.sh` ([EffectorP v1](https://github.com/JanaSperschneider/EffectorP-1.0)), `effectorp2.sh` ([EffectorP v2](https://github.com/JanaSperschneider/EffectorP-2.0)), `effectorp3.sh` ([EffectorP v3](https://github.com/JanaSperschneider/EffectorP-3.0)), `phobius.sh` ([Phobius](https://phobius.sbc.su.se/)), [`ps_scan.sh`](https://github.com/ebi-pf-team/interproscan/blob/master/core/jms-implementation/support-mini-x86-32/bin/prosite/ps_scan.pl), `signalp3.sh` ([SignalP v3](https://services.healthtech.dtu.dk/services/SignalP-3.0/)), `signalp4.sh` ([SignalP v4.1](https://services.healthtech.dtu.dk/services/SignalP-4.1/)), `signalp6.sh` ([SignalP v6](https://services.healthtech.dtu.dk/services/SignalP-6.0/)), `targetp.sh` ([TargetP](https://services.healthtech.dtu.dk/services/TargetP-2.0/)), `tmhmm.sh` ([TMHMM](https://services.healthtech.dtu.dk/services/TMHMM-2.0/)).
-6. `sbatch 005_CSEPfilter.sh` runs `CSEPfilter` to produce a list of CSEPs from the outputs of tools listed above.
-7. `sbatch -a 1-9 006_CSEP_blastp.sh` searches CSEP sequences against the [PHI-base database](http://www.phi-base.org/) (requires `phi-base_current.fas` and `phi-base_current.csv` to be downloaded into this directory from [here](http://www.phi-base.org/downloadLink.htm)).
+1. `001_ahrd.txt` contains the commands used to perform functional annotation of protein sets using [AHRD](https://github.com/groupschoof/AHRD), via the snakemake pipeline [eifunannot](https://github.com/EI-CoreBioinformatics/eifunannot).
+2. `sbatch -a 1-9 002_run_dbcan.sh` predicts CAZymes from protein sets using [run_dbcan](https://github.com/linnabrown/run_dbcan).
+3. `sbatch -a 1-9 003_antismash.sh` predicts secondary metabolites from protein sets using [antiSMASH](https://github.com/antismash/antismash).
+4. `004_eggnog-mapper.txt` contains the commands used to perform functional annotation of protein sets using [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper).
+
+### CSEP prediction
+
+5. `sbatch -a 1-9 005_CSEP_prediction.sh` submits a suite of tools that feed into CSEP prediction: `deepsig.sh` ([DeepSig](https://github.com/BolognaBiocomp/deepsig)), `deeploc.sh` ([DeepLoc](https://services.healthtech.dtu.dk/services/DeepLoc-1.0/)), `effectorp1.sh` ([EffectorP v1](https://github.com/JanaSperschneider/EffectorP-1.0)), `effectorp2.sh` ([EffectorP v2](https://github.com/JanaSperschneider/EffectorP-2.0)), `effectorp3.sh` ([EffectorP v3](https://github.com/JanaSperschneider/EffectorP-3.0)), `phobius.sh` ([Phobius](https://phobius.sbc.su.se/)), [`ps_scan.sh`](https://github.com/ebi-pf-team/interproscan/blob/master/core/jms-implementation/support-mini-x86-32/bin/prosite/ps_scan.pl), `signalp3.sh` ([SignalP v3](https://services.healthtech.dtu.dk/services/SignalP-3.0/)), `signalp4.sh` ([SignalP v4.1](https://services.healthtech.dtu.dk/services/SignalP-4.1/)), `signalp6.sh` ([SignalP v6](https://services.healthtech.dtu.dk/services/SignalP-6.0/)), `targetp.sh` ([TargetP](https://services.healthtech.dtu.dk/services/TargetP-2.0/)), `tmhmm.sh` ([TMHMM](https://services.healthtech.dtu.dk/services/TMHMM-2.0/)).
+6. `sbatch 006_CSEPfilter.sh` runs `CSEPfilter` to produce a list of CSEPs from the outputs of tools listed above.
+7. `sbatch -a 1-9 007_blastp.sh` searches CSEP sequences against the [PHI-base database](http://www.phi-base.org/) (requires `phi-base_current.fas` and `phi-base_current.csv` to be downloaded into this directory from [here](http://www.phi-base.org/downloadLink.htm)).
 
 ## 4 Phylogenetic classification
 
