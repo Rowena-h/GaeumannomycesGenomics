@@ -109,5 +109,6 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 1. `sbatch 001_orthogroup_assignment.sh` `orthogroup_assigner.R`
 2. `sbatch 002_big-scape.sh`
 3. `sbatch 003_lifestyle_test.sh` `lifestyle_v_phylogeny.R` `permanova.sh` `run_edited.py`
-4. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
+4. `go_enrichment.R`
+5. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
 
