@@ -3,7 +3,7 @@
 README IN PROGRESS...
 Insert schematic
 
-> Paper citation
+> Hill et al. (in prep) ***
 
 The pipeline was written for and run on Norwich BioScience Institutes' HPC cluster which uses the SLURM batch-queue system. This means that many of the bash scripts (`.sh` file endings) specify core allocation, run times and memory usage allocation that may need to be adapted for different platforms.
 
@@ -112,3 +112,6 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 4. `Rscript go_enrichment.R` runs a GO term enrichment of high copy-number genes using [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html).
 5. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
 
+## Citation
+
+>Hill et al. (in prep) ****
