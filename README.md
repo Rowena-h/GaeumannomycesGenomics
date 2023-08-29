@@ -106,9 +106,9 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 `cd 07_comparative_genomics` :file_folder:
 
-1. `sbatch 001_orthogroup_assignment.sh` `orthogroup_assigner.R`
-2. `sbatch 002_big-scape.sh`
-3. `sbatch 003_lifestyle_test.sh` `lifestyle_v_phylogeny.R` `permanova.sh` `run_edited.py`
-4. `go_enrichment.R`
+1. `sbatch 001_orthogroup_assignment.sh` submits `orthogroup_assigner.R` which makes abundance matrices of phylogenetic hierarchical orthogroups (HOGs) from OrthoFinder.
+2. `sbatch 002_big-scape.sh` predicts biosynthetic gene clusters from earlier antiSMASH output using [BiG-SCAPE](https://github.com/medema-group/BiG-SCAPE).
+3. `sbatch 003_lifestyle_test.sh` submits `lifestyle_v_phylogeny.R` which prepares input files and submits `permanova.sh`, a PERMANOVA-based test comparing the effect of phylogeny versus lifestyle on gene variance. `run_edited.py` is modified from the original script `run.py` by [Mesny & Vannier](https://github.com/fantin-mesny/Effect-Of-Biological-Categories-On-Genomes-Composition).
+4. `Rscript go_enrichment.R` runs a GO term enrichment of high copy-number genes using [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html).
 5. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
 
