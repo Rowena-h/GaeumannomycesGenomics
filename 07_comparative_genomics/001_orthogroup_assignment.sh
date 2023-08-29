@@ -7,6 +7,8 @@
 #SBATCH --mail-type=end,fail            	# notifications for job done & fail
 #SBATCH --mail-user=rowena.hill@earlham.ac.uk 	# send-to address
 
+#Get list of gene headers for biotype assignment
 grep -h ">" ../data/ncbi_data/proteins/gaeumannomyces/*.fasta | sed 's/^>//' > gene_list.txt
 
-singularity exec ~/programmes/gene_comparison/gene_comparison-230412.img Rscript orthogroup_assigner.r
+#Submit orthogroup assignment
+singularity exec ~/programmes/gene_comparison/gene_comparison-230412.img Rscript orthogroup_assigner.R
