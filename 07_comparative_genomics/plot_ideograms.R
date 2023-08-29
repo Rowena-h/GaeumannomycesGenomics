@@ -20,9 +20,9 @@ strains <- list(strain=c("Gt-19d1", "Gt-8d", "Gt-23d", "Gt14LH10", "Gt-4e",
 synteny <- read.csv("R:/GaeumannomycesGenomics/06_synteny/pseudochromosomes.tsv",
                     sep="\t", header=FALSE) %>%
   dplyr::rename(strain="V1", full.contig="V2", pseudochromosome="V3", inversion="V4") %>%
-  mutate(contig=sub(".*_", "", full.contig)) %>%
-  mutate(pseudochromosome.abb=sub("-.*", "", pseudochromosome)) %>%
-  mutate(pseudochromosome.abb=ifelse(grepl("B", pseudochromosome.abb), "mixed", pseudochromosome.abb))
+  mutate(contig=sub(".*_", "", full.contig),
+         pseudochromosome.abb=sub("-.*", "", pseudochromosome),
+         pseudochromosome.abb=ifelse(grepl("B", pseudochromosome.abb), "mixed", pseudochromosome.abb))
 
 #Read in metadata
 metadata <- read.csv(paste0("R:/GaeumannomycesGenomics/05_phylogenomics/raxmlng/metadata.csv"))
@@ -1089,9 +1089,14 @@ levels(all.distances$clade) <- c("Gh"=expression(paste(italic("Gh"))),
                                  "GtA"=expression(paste(italic("Gt"), " type A")),
                                  "GtB"=expression(paste(italic("Gt"), " type B")))
 
-#Print mean distances for each strain
+#Print mean distances (CSEPs versus other genes) for each strain
 all.distances %>%
   group_by(new.strain, group) %>%
+  summarise(mean=mean(distance))
+
+#Print mean distances (all genes) for each strain
+all.distances %>%
+  group_by(new.strain) %>%
   summarise(mean=mean(distance))
 
 #Check for normality
