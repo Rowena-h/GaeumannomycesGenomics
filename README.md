@@ -11,7 +11,7 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 
 ## 1 *De novo* genome assembly
 
-`cd 01_assembly` :file_folder:
+`cd 01_assembly` 📁
 
 ### Checking reads
 
@@ -38,21 +38,27 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 ### Final assessment
 
 11. `sbatch -a 1-9 011_kat_comp.sh` reruns KAT comp to check final content correctness of the filtered assemblies.
-13. `sbatch -a 1-9 013_busco_asco.sh` reruns BUSCO on the filtered assemblies.
-14. `sbatch 014_quast.sh` reruns QUAST on the filtered assemblies.
+12. `sbatch -a 1-9 013_busco_asco.sh` reruns BUSCO on the filtered assemblies.
+13. `sbatch 014_quast.sh` reruns QUAST on the filtered assemblies.
 
 ## 2 Structural annotation
-`cd 02_structural_annotation` :file_folder:
 
-1. `001_eirepeat.txt` contains the commands used to predict and mask repeat content using the [eirepeat](https://github.com/EI-CoreBioinformatics/eirepeat) pipeline, which is comprised of [RepeatModeler](https://www.repeatmasker.org/RepeatModeler), [RepeatMasker](http://www.repeatmasker.org/RepeatMasker) and [Red](http://toolsmith.ens.utulsa.edu/).
-2. `002_reat.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat). This also makes use of [minos](https://github.com/EI-CoreBioinformatics/minos) and [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to consolidate and rank gene models.
-3. `003_multi-liftoff.txt` contains the commands used to perform an all-versus-all comparison of gene models across all strains using [LiftOff](https://github.com/agshumate/Liftoff).
-4. `004_rnammer.txt` contains the commands used to predict ribosomal RNA sub units using [RNAmmer](https://services.healthtech.dtu.dk/services/RNAmmer-1.2/).
-5. `005_minos.txt` contains the commands used to perform a final minos run using the LiftOff and RNAmmer evidence.
+`cd 02_structural_annotation` 📁
+
+1. `001_liftoff.txt` contains the commands to generate the liftover gene model using the previous annotation of *G. tritici* using [LiftOff](https://github.com/agshumate/Liftoff).
+2. `001_eirepeat.txt` contains the commands used to predict and mask repeat content using the [eirepeat](https://github.com/EI-CoreBioinformatics/eirepeat) pipeline, which is comprised of [RepeatModeler](https://www.repeatmasker.org/RepeatModeler), [RepeatMasker](http://www.repeatmasker.org/RepeatMasker) and [Red](http://toolsmith.ens.utulsa.edu/).
+3. `002_reat_transcriptome.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat) transcriptome module. This makes [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to consolidate gene models.
+4. `003_reat_homology.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat) homology module. This module uses Splan to generate protein to genome alignments and leverages [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to score them and generate a final conscensus of the best gene models.
+5. `004_reat_prediction.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat) transcriptome module. It uses evidence provided by the final output of the previous two modules, Portcullis and [eirepeat](https://github.com/EI-CoreBioinformatics/eirepeat) to train Augustus to generate four different annotations using differential weighting of the evidences. It also generate a conscensus track using EVM and runs Mikado to recover UTR information.
+6. `005_minos.txt` contains the commands used to perform a first consolidation of the all the gene models produced before using [MINOS](https://github.com/EI-CoreBioinformatics/minos). This tool runs blastp, kallisto and CPC2 to generate score metrics to use as an input in [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to make sensible and standarized decision of the best gene models given a series of high quality annota
+7. `006_rnammer.txt` contains the commands used to predict ribosomal RNA sub units using [RNAmmer](https://services.healthtech.dtu.dk/services/RNAmmer-1.2/).
+8. `007_liftover_multi.txt` contains the commands used to perform an all-versus-all comparison of gene models across all strains using [LiftOff](https://github.com/agshumate/Liftoff).
+9. `008_filter_rRNA.txt` contains the commands used to filter the input annotations to the final [MINOS](https://github.com/EI-CoreBioinformatics/minos) step to avoid scoring rRNA as possible protein coding genes.
+10. `009_rerun_minos.txt` contains the commands used to perform a final minos including the liftover annotation of the all vs. all comparsion of all the previous strain annotations generated in the step 5.
 
 ## 3 Functional annotation
 
-`cd 03_functional_annotation` :file_folder:
+`cd 03_functional_annotation` 📁
 
 1. `001_ahrd.txt` contains the commands used to perform functional annotation of protein sets using [AHRD](https://github.com/groupschoof/AHRD), via the snakemake pipeline [eifunannot](https://github.com/EI-CoreBioinformatics/eifunannot).
 2. `sbatch -a 1-9 002_run_dbcan.sh` predicts CAZymes from protein sets using [run_dbcan](https://github.com/linnabrown/run_dbcan).
@@ -67,7 +73,7 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 
 ## 4 Phylogenetic classification
 
-`cd 04_phylogenetic_classification` :file_folder:
+`cd 04_phylogenetic_classification` 📁
 
 This folder contains a file - `markers` - listing the genetic markers selected for building the trees.
 
@@ -85,7 +91,7 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 ## 5 Phylogenomics
 
-`cd 05_phylogenomics` :file_folder:
+`cd 05_phylogenomics` 📁
 
 1. `sbatch 001_orthofinder.sh` infers phylogenetic hierarchical orthogroups (HOGs) using [OrthoFinder](https://github.com/davidemms/OrthoFinder).
 2. `sbatch 002_align_singlecopy.sh` submits batch array jobs to align all single-copy HOGs using MAFFT and trim using [trimAl](http://trimal.cgenomics.org/).
@@ -95,23 +101,23 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 ## 6 Synteny and structure
 
-`cd 06_synteny` :file_folder:
+`cd 06_synteny` 📁
 
 1. `sbatch 001_genespace.sh` formats protein and gff3 files and submits `genespace.R` to infer synteny between strains using [GENESPACE](https://github.com/jtlovell/GENESPACE).
 2. `sbatch 002_gc.sh` calculates GC content in 100,000 bp windows across each genome using [bedtools](https://github.com/arq5x/bedtools2).
 3. `sbatch 003_contigs2pseudochromosomes.sh` replaces fragment names according to pseudochromosomes inferred from GENESPACE, as recorded in `pseudochromosomes.tsv`.
 4. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
- 
+
 ## 7 Comparative genomics
 
-`cd 07_comparative_genomics` :file_folder:
+`cd 07_comparative_genomics` 📁
 
 1. `sbatch 001_orthogroup_assignment.sh` submits `orthogroup_assigner.R` which makes abundance matrices of HOGs from OrthoFinder.
 2. `sbatch 002_big-scape.sh` predicts biosynthetic gene clusters from earlier antiSMASH output using [BiG-SCAPE](https://github.com/medema-group/BiG-SCAPE).
-3. `sbatch 003_lifestyle_test.sh` submits `lifestyle_v_phylogeny.R` which prepares input files and submits `permanova.sh`, a PERMANOVA-based test comparing the effect of phylogeny versus lifestyle on gene variance. `run_edited.py` is modified from the original script `run.py` by [Mesny & Vannier](https://github.com/fantin-mesny/Effect-Of-Biological-Categories-On-Genomes-Composition).
+3. `sbatch 003_lifestyle_test.sh` submits `lifestyle_v_phylogeny.R` which prepares input files and submits `permanova.sh`, a PERMANOVA-based test comparing the effect of phylogeny versus lifestyle on gene variance. `run_edited.py` is modified from the original script `run.py` by [Mesny &amp; Vannier](https://github.com/fantin-mesny/Effect-Of-Biological-Categories-On-Genomes-Composition).
 4. `Rscript go_enrichment.R` runs a GO term enrichment of high copy-number HOGs using [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html).
 5. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
 
 ## Citation
 
->Hill et al. (in prep) ****
+> Hill et al. (in prep) ****
