@@ -20,7 +20,6 @@
 *.raxml.bestTreeCollapsed
 *.raxml.reduced.partition
 *.raxml.reduced.phy
-*.txt
 *.tsv
 #ignore data directories
 data
