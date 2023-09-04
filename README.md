@@ -33,7 +33,7 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 ### Filtering
 
 9. `sbatch -a 1-9 009_kat_sect.sh` estimates assembly coverage levels using KAT.
-10. `sbatch -a 1-9 010_filter_lowcov.sh` filters out small, low coverage sequences using a custom script, `scripts/low_cov_deleter.R`.
+10. `sbatch -a 1-9 010_filter_lowcov.sh` filters out small, low coverage sequences using a custom script, `low_cov_deleter.R`.
 
 ### Final assessment
 
