@@ -1,0 +1,24 @@
+Copy all the genomes and the annotation but the ones we are going to use in the liftover as a targett
+
+
+for f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do mkdir -p ${f}/Analysis/multiple_liftoff-1.5.1_CBG/Inputs/{genomes,annotations} ; cd ${f}/Analysis/multiple_liftoff-1.5.1_CBG/Inputs; for g in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d}; do  assemblie=$(readlink -e ../../../../${g}/Reference/Genome/*.fa) ; annotation=$(readlink -e ../../../../${g}/Analysis/minos-1.9.0-dev/outputs/results/${g}_EIv1.release.gff3) ; cd genomes ; cp $assemblie  ./ ; cd ../annotations ; cp $annotation ./ ; cd .. ; done ;  genome=$( basename ../../../Reference/Genome/*.fa) ; minos=$( basename  ../../../../${f}/Analysis/minos-1.9.0-dev/outputs/results/${f}_EIv1.release.gff3);  mv genomes/${genome} ../ ;mv annotations/${minos} ../; cat genomes/* > ../all_reference_genomes.fasta ; cat annotations/* > ../all_minos_annotations.gff3; mark ; done
+
+#demultiplex the final gff from the parents (test)
+for f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do cd ${f}/Analysis/multiple_liftoff-1.5.1_CBG ; mkdir -p parent_gffs/ ; for j in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do [[ $f != $j  ]] && grep $j ${f}_liftoff_all_Gaeumannomyces.gff > parent_gffs/${f}_liftoff_all_Gaeumannomyces_from-parent_${j}.gff; done ; mark ; done
+[Analysis]--% ls Gt-19d1/Analysis/multiple_liftoff-1.5.1_CBG/parent_gffs/
+
+#Run multicopare
+
+for f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d}; do cd ${f}/Analysis/multiple_liftoff-1.5.1_CBG/ ;  cp /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/multicompare_all_liftoff/multi_genome_compare.liftoff* ./ ; rm -f  *.fa.*; genome=$(ls *.fa);sed -i "s/Gt-19d1/${f}/g" multi_genome_compare.liftoff.config.yaml ; sed -i "s/reference/${genome}/g" multi_genome_compare.liftoff.config.yaml  ;sed -i "s/target_liftoff.gff/${f}_liftoff_all_Gaeumannomyces.gff/g" multi_genome_compare.liftoff.config.yaml ; sbatch -c 4 --mem 10G -p ei-medium -o ${f}_multi_genome_compare.%j.log -J ${f}_multi_genome_compare --mail-type=fail,end --mail-user=olivera@nbi.ac.uk --wrap 'source python_miniconda-4.8.3_py3.8_gk_DONOTUSE && snakemake --configfile multi_genome_compare.liftoff.config.yaml --snakefile multi_genome_compare.liftoff.smk --cores 4' ; cd - ;done
+
+Insights in gene transfering
+
+for f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do echo "||${f}||"; for j in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d}; do [[ -f ${f}/Analysis/multiple_liftoff-1.5.1_CBG/parent_gffs/${f}_liftoff_all_Gaeumannomyces_from-parent_${j}.gff ]] && sum=$(awkgene ${f}/Analysis/multiple_liftoff-1.5.1_CBG/parent_gffs/* |wc -l) && count=$(awkgene ${f}/Analysis/multiple_liftoff-1.5.1_CBG/parent_gffs/*_liftoff_all_Gaeumannomyces_from-parent_${j}.gff | wc -l) && echo "|${j}|${count}|" && count=0 ; done; echo "|total|${sum}|"; echo && echo && echo;done
+
+#Just using the liftoff models is wrong maybe using the HC ones might be more usefuel
+
+for f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do mkdir -p ${f}/Analysis/multiple_liftoff-1.5.1_CBG_polished/Inputs/{genomes,annotations} ; cd ${f}/Analysis/multiple_liftoff-1.5.1_CBG_polished/Inputs; for g in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d}; do  assemblie=$(readlink -e ../../../../${g}/Reference/Genome/*.fa) ; annotation=$(readlink -e ../../../../${g}/Analysis/minos-1.9.0-dev/outputs/results/${g}_EIv1.release.gff3) ; cd genomes ; cp $assemblie  ./ ; cd ../annotations ; cp $annotation ./ ; cd .. ; done ;  genome=$( basename ../../../Reference/Genome/*.fa) ; minos=$( basename  ../../../../${f}/Analysis/minos-1.9.0-dev/outputs/results/${f}_EIv1.release.gff3);  mv genomes/${genome} ../ ;mv annotations/${minos} ../; cat genomes/* > ../all_reference_genomes.fasta ; cat annotations/* > ../all_minos_annotations.gff3; mark ; done
+
+for f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do cd ${f}/Analysis/multiple_liftoff-1.5.1_CBG_polished/; awkgene  all_minos_annotations.gff3 | grep "confidence=High" | cut -d ';' -f1 | cut -f9 | sed "s/ID=//g" > hc_genes.txt ; source mikado-master && mikado util grep --genes hc_genes.txt all_minos_annotations.gff3 >  all_minos_annotations_high-confidence.gff3; cd - ; done
+
+ifor f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do path=$( pwd ); cd ${f}/Analysis/multiple_liftoff-1.5.1_CBG/; awkgene  liftover_all-2-${f}.gff | cut -f9  | cut -d ';' -f1 | sed 's/ID=//g' > liftover_genes.txt; source mikado-master && mikado util grep --genes liftover_genes.txt ${f}_liftoff_all_Gaeumannomyces.gff   >  ${path}/${f}/Analysis/minos-1.9.0-dev_final/Inputs/Models/${f}_liftoff_all_Gaeumannomyces.gff; mark ; done

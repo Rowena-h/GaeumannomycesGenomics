@@ -1,0 +1,4 @@
+#Files were modified to have shorter header names since Repeat Modeler has a length constraint.
+
+for f in {Gt-19d1,Gt-4e,Gh-2C17,Gh-1B17,Gt-3aA1,Gt-8d,Gt-CB1,Gt14LH10,Gt-23d} ; do mkdir -p ${f}/Analysis/eirepeat-1.1.0_CBG ; cd ${f}/Analysis/eirepeat-1.1.0_CBG ; source eirepeat-1.1.0_CBG && eirepeat configure --species Ascomycota --run_red_repeats --jira 529_GENNANO -f ${f}.fasta && sbatch -p ei-medium -c 2 --mem 20G -J GENANNO-529-Gh-2C17-eirepeat -o out_eirepeat.%N.%j.log --wrap 'source eirepeat-1.1.0_CBG && /usr/bin/time -v eirepeat run --verbose output/run_config.yaml' ; done
+
