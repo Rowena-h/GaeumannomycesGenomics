@@ -38,8 +38,9 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 ### Final assessment
 
 11. `sbatch -a 1-9 011_kat_comp.sh` reruns KAT comp to check final content correctness of the filtered assemblies.
-12. `sbatch -a 1-9 013_busco_asco.sh` reruns BUSCO on the filtered assemblies.
-13. `sbatch 014_quast.sh` reruns QUAST on the filtered assemblies.
+12. `sbatch -a 1-9 012_busco_asco.sh` reruns BUSCO on the filtered assemblies.
+13. `sbatch 013_quast.sh` reruns QUAST on the filtered assemblies.
+14. `sbatch -a 1-9 014_tapestry.sh` predicts telomeric repeats on the ends of fragments using [Tapestry](https://github.com/johnomics/tapestry).
 
 ## 2 Structural annotation
 
