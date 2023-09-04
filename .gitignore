@@ -5,6 +5,7 @@
 *.faa*
 *.fa
 *.fas
+*.fas.*
 *.fasta
 *.bam
 *.Rhistory
