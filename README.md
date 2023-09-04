@@ -45,7 +45,7 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 
 `cd 02_structural_annotation` 📁
 
-1. `001_liftoff.txt` contains the commands to generate the liftover gene model using the previous annotation of *G. tritici* using [LiftOff](https://github.com/agshumate/Liftoff).
+1. `000_liftoff.txt` contains the commands to generate the liftover gene model using the previous annotation of *G. tritici* using [LiftOff](https://github.com/agshumate/Liftoff).
 2. `001_eirepeat.txt` contains the commands used to predict and mask repeat content using the [eirepeat](https://github.com/EI-CoreBioinformatics/eirepeat) pipeline, which is comprised of [RepeatModeler](https://www.repeatmasker.org/RepeatModeler), [RepeatMasker](http://www.repeatmasker.org/RepeatMasker) and [Red](http://toolsmith.ens.utulsa.edu/).
 3. `002_reat_transcriptome.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat) transcriptome module. This makes [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to consolidate gene models.
 4. `003_reat_homology.txt` contains the commands used to predict gene models using [REAT](https://github.com/EI-CoreBioinformatics/reat) homology module. This module uses Splan to generate protein to genome alignments and leverages [Mikado](https://github.com/EI-CoreBioinformatics/Mikado) to score them and generate a final conscensus of the best gene models.
