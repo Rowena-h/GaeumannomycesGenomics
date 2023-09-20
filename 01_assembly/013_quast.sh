@@ -10,11 +10,11 @@
 #QUAST v5.0.2
 source package 65df873c-d601-44ba-ac61-64644b55dfbb
 
-asm_files=$(ls ../scratch/010_filter_lowcov/*/*.hifi_sect_filtered.fa)
-strains=$(ls ../scratch/010_filter_lowcov/*/*.hifi_sect_filtered.fa | sed 's|^.*/||' | sed 's|\.asm.*$||')
+asm_files=$(awk '{print $2}' ../strains | sed 's/$/\.asm\.bp\.p_ctg\.hifi_sect_filtered\.fa/' | sed 's|^|\.\./scratch/010_filter_lowcov/\*/|')
+strains=$(awk '{print $1}' ../strains)
 
 #Run QUAST for contiguity statistics
 quast	${asm_files} \
 	-l $(echo ${strains}| sed 's/ /,/g') \
-	-o ../scratch/014_quast/final_quast_results \
+	-o ../scratch/014_quast/gaeumannomyces_final_quast_results \
 	-t ${SLURM_CPUS_PER_TASK} --fungus
