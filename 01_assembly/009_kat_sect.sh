@@ -12,20 +12,8 @@ ml kat/2.3.4
 
 strain_file=$(awk '{print $2}' ../strains | sed -n ${SLURM_ARRAY_TASK_ID}p)
 out_dir=../scratch/009_kat_sect/${strain_file}
-
-#Use contaminant filtered unitigs if they exist, otherwise the contigs
-if [[ -f ../scratch/009_remove_contam/${strain_file}/${strain_file}.asm.bp.p_utg.fa ]]
-then
-
-	asm_file=../scratch/009_remove_contam/${strain_file}/${strain_file}.asm.bp.p_utg.fa
-	reads_file=$(awk '{print $3}' ../strains | sed -n ${SLURM_ARRAY_TASK_ID}p)
-
-else
-
-	asm_file=../scratch/hifiasm-assemblies/${strain_file}/${strain_file}.asm.bp.p_ctg.fa
-	reads_file=../scratch/hifi-reads/*${strain_file}_hifi.fastq.gz
-
-fi
+asm_file=../scratch/hifiasm-assemblies/${strain_file}/${strain_file}.asm.bp.p_ctg.fa
+reads_file=../scratch/hifi-reads/*${strain_file}_hifi.fastq.gz
 
 #Make output directory
 mkdir -p ${out_dir}

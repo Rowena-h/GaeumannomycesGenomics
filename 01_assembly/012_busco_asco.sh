@@ -7,30 +7,18 @@
 #SBATCH --mail-type=END,FAIL                    # notifications for job done & fail
 #SBATCH --mail-user=rowena.hill@earlham.ac.uk   # send-to address
 
-#BUSCO v2.5.1
+#BUSCO v5.2.1
 source package 97a7f391-0f5c-4bdb-b951-14d0d5ee4576
 
 strain_file=$(awk '{print $2}' ../strains | sed -n ${SLURM_ARRAY_TASK_ID}p)
 out_dir=../scratch/013_busco_asco/${strain_file}
-
-#Use contaminant, coverage filtered unitigs if they exist, otherwise the contigs
-if [[ -f ../scratch/010_filter_lowcov/${strain_file}/${strain_file}.asm.bp.p_utg.hifi_sect_filtered.fa ]]
-then
-
-        asm_file=../scratch/010_filter_lowcov/${strain_file}/${strain_file}.asm.bp.p_utg.hifi_sect_filtered.fa
-
-else
-
-        asm_file=../scratch/010_filter_lowcov/${strain_file}/${strain_file}.asm.bp.p_ctg.hifi_sect_filtered.fa
-
-fi
 
 #Make output directory
 mkdir -p ${out_dir}
 
 #Run BUSCO on filtered assembly
 busco	-m genome \
-	-i ${asm_file} \
+	-i ../scratch/010_filter_lowcov/${strain_file}/${strain_file}.asm.bp.p_ctg.hifi_sect_filtered.fa \
 	-o hifi_assm_${strain_file}_busco_asco \
 	-l ascomycota --out_path ${out_dir} \
 	-c ${SLURM_CPUS_PER_TASK} -f \
