@@ -740,13 +740,13 @@ gene.content.grob <- as.grob(
 )
 
 #Write to file
-pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/gaeumannomyces_genes-",
-                Sys.Date(), ".pdf"),
-    height=6, width=7)
+# pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/gaeumannomyces_genes-",
+#                 Sys.Date(), ".pdf"),
+#     height=6, width=7)
 ggarrange(gene.content.grob,
           ggarrange(gg.accumulation, gg.euler, labels=c("", "c")),
           nrow=2, heights=c(2, 1), labels="auto")
-dev.off()
+# dev.off()
 
 
 ## Abundance matrix plots ##
@@ -755,13 +755,39 @@ dev.off()
 skeleton.tree <- drop.tip(tree, c(outgroups, "GCF_000145635.1_Gae_graminis_V2_protein.faa_XP"))
 
 #Plot bare tree
-gg.skeleton.tree <- ggtree(skeleton.tree, branch.length="none") %<+% metadata +
+gg.skeleton.tree <- ggtree(skeleton.tree, branch.length="none") %<+% metadata
+
+#Make dataframe of Gt type nodes
+types.skeleton.df <- data.frame(
+  type=unique(metadata %>%
+                filter(type != "") %>%
+                pull(type)),
+  node=NA
+)
+
+#Find the most recent common ancestor for each type
+for (j in 1:length(types.skeleton.df$type)) {
+  
+  types.skeleton.df$node[j] <- 
+    MRCA(gg.skeleton.tree,
+         metadata$tip[metadata$type == types.skeleton.df$type[j] &
+                        metadata$own == "Y"])
+  
+}
+
+#Add tips and types to bare tree
+gg.skeleton.tree <- gg.skeleton.tree +
   xlim(0, 30) +
   geom_tiplab(aes(label=new.label),
-              align=TRUE,
               offset=0.5,
               size=2,
               parse=TRUE) +
+  geom_cladelab(data=types.skeleton.df,
+                mapping=aes(node=node, label=type),
+                fontsize=2,
+                barsize=0.8,
+                offset=20,
+                offset.text=1) +
   theme(plot.title=element_text(face="bold"))
 
 
@@ -775,8 +801,8 @@ CSEP.abundance.df <- CSEP.count %>%
   filter(rowSums(across())>0) %>%
   rownames_to_column(var="orthogroup") %>%
   gather(strain, num, -orthogroup) %>%
-  mutate(PHI.base_entry=sub("_.*", "",
-                            orthogroups.stats$PHI.base_entry[match(orthogroup, orthogroups.stats$orthogroup)]),
+  mutate(PHI.base_entry=sub(
+    "_.*", "",orthogroups.stats$PHI.base_entry[match(orthogroup, orthogroups.stats$orthogroup)]),
          CSEP_name=orthogroups.stats$CSEP_name[match(orthogroup, orthogroups.stats$orthogroup)],
          name_label=paste0(sub("N0\\.", "", orthogroup), "\n", CSEP_name)) %>%
   filter(num > 0, !is.na(PHI.base_entry)) %>%
@@ -801,6 +827,17 @@ CSEP.abundance.df <- CSEP.abundance.df %>%
          phenotype=sub("Effector \\(plant avirulence determinant\\)", "Effector", 
                        sub("Loss of pathogenicity", "Loss\npath", str_to_sentence(phenotype)))) %>%
   select(tiplab, everything())
+
+#Percentage of CSEPs with PHI-base link
+round(length(which(!is.na(orthogroups.stats$PHI.base_entry))) /
+        length(which(!is.na(orthogroups.stats$CSEP))) * 100)
+
+#Print PHI-base details for CSEPs
+phibase.df[which(
+  phibase.df$PHI_MolConn_ID %in% 
+    unlist(str_split(unique(na.omit(orthogroups.stats$PHI.base_entry)), ",|_"))),
+  c("PHI_MolConn_ID", "Gene_name", "Pathogen_species", "Experimental_host_species",
+       "Phenotype_of_mutant", "experimental_evidence", "Comments")]
 
 #Plot grid of CSEPs
 gg.cseps <- ggplot(CSEP.abundance.df,
@@ -869,7 +906,7 @@ for (i in 1:length(unique(substrates.df$CAZy.Family))) {
 }
 
 #Split rows with more than one substrate and add tree tip labels
-CAZyme.abundance.df<- CAZyme.abundance.df %>%
+CAZyme.abundance.df <- CAZyme.abundance.df %>%
   separate_rows(sep=",", substrate) %>%
   filter(!is.na(substrate)) %>%
   group_by(substrate) %>%
@@ -967,9 +1004,9 @@ gg.bgcs <- ggplot(bgc.abundance.df,
 #Write to file
 pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/abundances-1-", Sys.Date(), ".pdf"),
     height=4.2, width=7)
-ggarrange(as.grob(gg.cseps %>% insert_left(gg.skeleton.tree, width=0.27)),
-          as.grob(gg.cazymes %>% insert_left(gg.skeleton.tree, width=0.27)),
-          labels="auto", nrow=2, heights=c(1.1, 1))
+ggarrange(as.grob(gg.cazymes %>% insert_left(gg.skeleton.tree, width=0.27)),
+          as.grob(gg.cseps %>% insert_left(gg.skeleton.tree, width=0.27)),
+          labels="auto", nrow=2, heights=c(1, 1.1))
 dev.off()
 
 pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/abundances-2-", Sys.Date(), ".pdf"),
@@ -1053,9 +1090,8 @@ gg.repeats <- ggplot(repeats.df, aes(y=tip, x=num, fill=class)) +
         legend.spacing.x=unit(0.1, "cm"),
         legend.title=element_blank())
 
-pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/gaeumannomyces_TEs-",
-                Sys.Date(), ".pdf"),
-    height=4, width=7)
+#pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/gaeumannomyces_TEs-",
+#                Sys.Date(), ".pdf"), height=4, width=7)
 gg.repeats %>% 
   insert_left(gg.tree, width=2.7)
-dev.off()
+#dev.off()
