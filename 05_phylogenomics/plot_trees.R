@@ -217,7 +217,7 @@ gg.species.tree <- gg.species.tree +
               size=3,
               parse=TRUE) +
   annotate(geom="label",
-           label="2,359 loci",
+           label="7,029 loci",
            x=max(na.omit(gg.species.tree$data$x))*0.3,
            y=max(na.omit(gg.species.tree$data$y))*0.92,
            size=3) +
