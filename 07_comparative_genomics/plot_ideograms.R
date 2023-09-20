@@ -7,6 +7,7 @@ library(ggnewscale)
 library(rstatix)
 library(multcompView)
 library(cowplot)
+library(ggh4x)
 
 #Make list with strains and filenames
 strains <- list(strain=c("Gt-19d1", "Gt-8d", "Gt-23d", "Gt14LH10", "Gt-4e",
@@ -160,7 +161,8 @@ for (strain in colnames(orthogroups)) {
 #Combine duplicate results for all strains
 df.duplicates.stats <- bind_rows(duplicates.stats) %>%
   filter(duplicate != "tandem") %>%
-  mutate(new.strain=metadata$new.strain[match(strain, metadata$strain)],
+  mutate(duplicate=sub("mixed", "inter-chromosomal", duplicate),
+         new.strain=metadata$new.strain[match(strain, metadata$strain)],
          new.strain=factor(new.strain, levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1",
                                                 "Gt-19d1", "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10")),
          clade=metadata$clade[match(strain, metadata$strain)],
@@ -181,12 +183,12 @@ gg.duplicates <- ggplot(df.duplicates.stats,
                outlier.size=0.3,
                position=position_dodge(width=0.5)) +
   labs(x=NULL, y="Duplicate gene set size") +
-  scale_colour_manual(values=c("#C3D6C3", "#87AE88", "#4B854C"),
-                      labels=c("inter-chromosomal",
+  scale_colour_manual(values=c("#4B854C", "#C3D6C3"),
+                      labels=c("inter-chromosomal \n(including mixed)",
                                "intra-chromosomal\n(including tandems)",
                                "mixed")) +
   scale_y_continuous(expand=expansion(mult=c(0, 0.2)),
-                     limits=c(0, NA)) +
+                     limits=c(2, NA)) +
   coord_cartesian(clip="off") +
   theme_minimal() +
   theme(strip.placement="outside",
@@ -545,6 +547,15 @@ for (i in 1:length(strains$strain)) {
 
   }
   
+  #Calculate number of genes with isoforms
+  df.isoforms <- as.data.frame(gff) %>% 
+    filter(type == "mRNA") %>%
+    mutate(gene=sub("\\..*", "", ID)) %>%
+    group_by(gene) %>%
+    summarise(isoforms=n()) %>%
+    mutate(strain=strains$strain[i],
+           new.strain=metadata$new.strain[match(strain, metadata$strain)])
+  
   #Calculate distances of genes to nearest TE
   te.distances.genes <- list()
   te.distances.cseps <- list()
@@ -641,6 +652,7 @@ for (i in 1:length(strains$strain)) {
   assign(paste0("df.CSEPs.cumulative.", strains$strain[i]), df.CSEPs)
   assign(paste0("df.te.density.cumulative.", strains$strain[i]), df.te.density)
   assign(paste0("df.te.distances.", strains$strain[i]), df.te.distances)
+  assign(paste0("df.isoforms.", strains$strain[i]), df.isoforms)
   
 }
 
@@ -784,9 +796,9 @@ gg.ideogram <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
         panel.background=element_blank())
 
 #Write to file
-pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/ideogram-", Sys.Date(), ".pdf"), width=7, height=5)
+#pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/ideogram-", Sys.Date(), ".pdf"), width=7, height=5)
 gg.ideogram
-dev.off()
+#dev.off()
 
 #Plot TE density and CSEP locations
 gg.te <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
@@ -950,7 +962,7 @@ for (hcn.hog in sort(unique(all.hcn$hog))) {
 }
 
 #Write to file (just GtB expansions)
-pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/hcn_duplicates-", Sys.Date(), ".pdf"), width=7, height=3.5)
+#pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/hcn_duplicates-", Sys.Date(), ".pdf"), width=7, height=3.5)
 plot_grid(gg.duplicates,
           plot_grid(gg.hcn.hog.N0.HOG0000002 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
                     gg.hcn.hog.N0.HOG0000012 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
@@ -959,12 +971,12 @@ plot_grid(gg.duplicates,
                     gg.hcn.hog.N0.HOG0000041 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
                     nrow=1),
           nrow=2, rel_heights=c(1.2, 1), labels="auto")
-dev.off()
+#dev.off()
 
 #Write to file
-pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/hcn_facet-", Sys.Date(), ".pdf"), width=7, height=7)
+#pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/hcn_facet-", Sys.Date(), ".pdf"), width=7, height=7)
 plot_grid(plotlist=mget(ls(pattern="gg.hcn.hog.")))
-dev.off()
+#dev.off()
 
 
 ## TE CSEP correlation ##
@@ -977,7 +989,8 @@ all.CSEP.density$new.strain <-
                   "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
 
 #Combine TE and CSEP density by window
-df.te.csep <- left_join(all.CSEP.density, all.te.density, by=c("max", "strain", "new.strain", "seqnames"))
+df.te.csep <- left_join(all.CSEP.density, all.te.density, by=c("max", "strain", "new.strain", "seqnames")) %>%
+  mutate(clade=factor(metadata$clade[match(new.strain, metadata$new.strain)], levels=c("Gh", "Ga", "GtA", "GtB")))
 
 #Check for normality
 for (strain in unique(df.te.csep$new.strain)) {
@@ -993,7 +1006,7 @@ for (strain in unique(df.te.csep$new.strain)) {
 
 #Calculate Kendall's tau for each strain
 df.te.csep.cor <- df.te.csep %>%
-  group_by(new.strain) %>%
+  group_by(new.strain, clade) %>%
   cor_test(num.x, num.y, method="kendall") %>%
   filter(p < 0.05)
 
@@ -1009,7 +1022,9 @@ integer_breaks <- function(n = 5, ...) {
 
 #Plot scatterplots of TE and CSEP density
 gg.te.cseps <- ggplot(df.te.csep, aes(x=num.x, y=num.y)) +
-  facet_wrap(~new.strain, nrow=1) +
+  facet_nested_wrap(~clade+new.strain, nrow=1,
+               nest_line=element_line()) +
+  #facet_wrap(~new.strain, nrow=1) +
   geom_point(size=0.3) +
   geom_smooth(method = "loess", linewidth=0.3, colour="#87AE88", fill="#87AE88") +
   geom_text(data=df.te.csep.cor,
@@ -1219,17 +1234,96 @@ gg.distances <- ggplot(all.distances,
         panel.spacing=unit(1, "lines"),
         plot.margin=margin(10, 5.5, 5.5, 5.5))
 
-
 #Write to file
-pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/te_csep_comp-", Sys.Date(), ".pdf"), width=7, height=6)
+#pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/te_csep_comp-", Sys.Date(), ".pdf"), width=7, height=6.2)
 
 plot_grid(gg.te,
           plot_grid(gg.te.cseps, gg.gene.csep, gg.distances,
                     align="v", axis="lr", ncol=1,
-                    rel_heights=c(1, 1, 2),
+                    rel_heights=c(1.1, 0.9, 2),
                     labels=c("b", "", "c")),
           rel_heights=c(1, 1.5),
           ncol=1,
           labels=c("a", ""))
 
-dev.off()
+#dev.off()
+
+
+## Isoform rates ##
+
+#Combine isoform results for all strains
+all.isoforms <- do.call("rbind", mget(ls(pattern="df.isoforms.")))
+all.isoforms$new.strain <- 
+  factor(all.isoforms$new.strain,
+         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
+                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+
+#Calculate total number of genes
+all.gene.numbers <- all.isoforms %>%
+  group_by(new.strain) %>%
+  summarise(total.genes=n_distinct(gene))
+
+#Calculate proportion of total genes with different numbers of isoforms for each strain
+all.isoform.numbers <- all.isoforms %>%
+  filter(isoforms > 1) %>%
+  group_by(new.strain, isoforms) %>%
+  summarise(num=n()) %>%
+  left_join(all.gene.numbers) %>%
+  mutate(prop=num/total.genes,
+         clade=factor(metadata$clade[match(new.strain, metadata$new.strain)],
+                      levels=c("Gh", "Ga", "GtA", "GtB")))
+
+#Calculate overall proportion of total genes with 2+ isoforms for each strain
+all.isoform.rates <- all.isoform.numbers %>%
+  group_by(new.strain) %>%
+  summarise(prop=sum(prop), x=max(isoforms)) %>%
+  mutate(clade=factor(metadata$clade[match(new.strain, metadata$new.strain)],
+                      levels=c("Gh", "Ga", "GtA", "GtB")))
+
+#Function to force axis labels to be multiples of 4
+two_breaks <- function(...) {
+  fxn <- function(x) {
+    breaks <- seq(2, max(x), 4)
+    names(breaks) <- attr(breaks, "labels")
+    breaks
+  }
+  return(fxn)
+}
+
+#Plot histogram of number of isoforms
+gg.isoforms <- ggplot(all.isoform.numbers, aes(x=isoforms, y=prop*100)) +
+  facet_nested(~clade+new.strain, scales="free_x", space="free",
+               nest_line=element_line()) +
+  geom_bar(stat="identity") +
+  geom_label(data=all.isoform.rates,
+            aes(x=x, y=20, label=paste0(round(prop*100), "%")),
+            position=position_nudge(x=-3, y=-1),
+            fontface="bold",
+            label.padding=unit(0.1, "lines"),
+            label.size=0,
+            fill="dimgrey",
+            colour="white",
+            size=2) +
+  labs(x="Number of isoforms", y="Proportion of total genes (%)") +
+  scale_y_continuous(expand=expansion(mult=c(0, 0.1))) +
+  scale_x_continuous(breaks=two_breaks()) +
+  coord_cartesian(ylim=c(0, NA), clip="off") +
+  theme_minimal() +
+  theme(strip.placement="outside",
+        strip.text=element_text(size=7, face="bold"),
+        legend.position="top",
+        legend.margin=margin(0, 0, 0, 0),
+        legend.key.size=unit(8, "pt"),
+        legend.title=element_blank(),
+        legend.text=element_text(size=7, margin=margin(0, 5, 0, 0)),
+        axis.ticks.x=element_blank(),
+        axis.title=element_text(size=7),
+        axis.text.y=element_text(size=5),
+        axis.text.x=element_text(size=7),
+        panel.spacing=unit(1, "lines"),
+        plot.margin=margin(5.5, 5.5, 0, 5.5))
+
+#Write to file
+#pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/isoforms-", Sys.Date(), ".pdf"), width=7, height=2)
+gg.isoforms
+#dev.off()
