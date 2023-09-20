@@ -50,19 +50,34 @@ all.genes <- orthogroups %>%
 hcn.genes <- hcn.df %>%
   left_join(all.genes, by=c("hog", "strain"))
 
-#Assign genes of interest amongst gene universe
-geneList <- factor(as.integer(all.genes$gene %in% hcn.genes$gene))
-names(geneList) <- all.genes$gene
+#For each strain
+for (strain in unique(hcn.genes$strain)) {
+  
+  universe <- all.genes[all.genes$strain == strain,]
+  test.set <- hcn.genes[hcn.genes$strain == strain,]
+  
+  #Assign genes of interest amongst gene universe
+  geneList <- factor(as.integer(universe$gene %in% test.set$gene))
+  names(geneList) <- universe$gene
+  
+  #Format for topGO
+  geneID2GO <- setNames(as.list(as.character(universe$go)), nm=universe$gene)
+  
+  #Run GO enrichment
+  myGOdata <- new("topGOdata", description="Copy-number", ontology="BP",
+                  allGenes=geneList, annot=annFUN.gene2GO, gene2GO=geneID2GO)
+  
+  #Fisher's exact test for significance
+  resultFisher <- runTest(myGOdata, algorithm="weight01", statistic="fisher")
+  
+  #Summarise significant results
+  sig.df <- GenTable(myGOdata, raw.p.value=resultFisher, topNodes=length(resultFisher@score)) %>%
+    filter(raw.p.value < 0.05) %>%
+    mutate(strain=strain)
+  
+  assign(paste0("sig.df.", strain), sig.df)
+  
+}
 
-#Format for topGO
-geneID2GO <- setNames(as.list(as.character(all.genes$go)), nm=all.genes$gene)
-
-#Run GO enrichment
-myGOdata <- new("topGOdata", description="Copy-number", ontology="BP",
-                allGenes=geneList, annot=annFUN.gene2GO, gene2GO=geneID2GO)
-
-#Fisher's exact test for significance
-resultFisher <- runTest(myGOdata, algorithm="weight01", statistic="fisher")
-
-#Summarise results
-GenTable(myGOdata, raw.p.value=resultFisher, topNodes=length(resultFisher@score))
+#Combine results
+bind_rows(mget(ls(pattern="sig.df.")))
