@@ -22,7 +22,7 @@ for strain in Gt14LH10 Gt-19d1 Gt-23d Gt-4e Gt-8d Gh-1B17 Gh-2C17 Gt-3aA1 Gt-CB1
 do
 	samtools faidx ../results/hifiasm_assemblies/*${strain}/v1.1/sequences/*${strain}_EI_v1.1_p_ctg.fa
 	bedtools makewindows 	-g ../results/hifiasm_assemblies/*${strain}/v1.1/sequences/*${strain}_EI_v1.1_p_ctg.fa.fai \
-				-w 1000 > ${out_dir}/${strain}_windows_1000.bed
+				-w 100000 > ${out_dir}/${strain}_windows_100000.bed
 	bedtools nuc 	-fi ../results/hifiasm_assemblies/*${strain}/v1.1/sequences/*${strain}_EI_v1.1_p_ctg.fa  \
-			-bed ${out_dir}/${strain}_windows_1000.bed > ${out_dir}/${strain}_gc.tsv
+			-bed ${out_dir}/${strain}_windows_100000.bed > ${out_dir}/${strain}_gc_100000.tsv
 done
