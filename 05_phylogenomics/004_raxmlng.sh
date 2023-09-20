@@ -2,7 +2,7 @@
 #SBATCH -p ei-long                      	# Use normal partition (queue) for now.
 #SBATCH -N 1                            	# number of nodes
 #SBATCH -c 48                            	# number of cores per task
-#SBATCH --mem 100000	                     	# memory pool for all cores
+#SBATCH --mem 500G	                     	# memory pool for all cores
 #SBATCH --output ../scratch/logs/%x.o%j         # STDOUT and STDERR
 #SBATCH --mail-type=end,fail            	# notifications for job done & fail
 #SBATCH --mail-user=rowena.hill@earlham.ac.uk 	# send-to address
