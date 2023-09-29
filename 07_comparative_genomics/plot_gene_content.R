@@ -310,6 +310,13 @@ for (i in unique(genes.df.gt$strain)) {
 genes.df.gt <- genes.df.gt %>%
   gather("variable", "value", -strain, -category)
 
+#Calculate proportion of core genome
+genes.df.gt %>%
+  filter(variable == "orthogroups") %>%
+  group_by(strain) %>% spread(category, value) %>%
+  mutate(total=core+softcore+accessory+specific) %>%
+  summarise(core/total)
+
 #Summarise non-Gt gene content
 genes.df.other <- bind_rows(
   orthogroups.count %>%
