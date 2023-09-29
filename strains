@@ -1,10 +1,9 @@
-Gh-1B17	Gh1B17	Gaeumannomyces_hyphopodioides
-Gh-2C17	NZ1292C17	Gaeumannomyces_hyphopodioides
-Gt-19d1	Gt17LH19d1	Gaeumannomyces_tritici
-Gt-23d	Gt23d	Gaeumannomyces_tritici
-Gt-3aA1	PG3aA1	Gaeumannomyces_avenae
-Gt-4e	Gt4e	Gaeumannomyces_tritici
-Gt-8d	Gt17LH48d	Gaeumannomyces_tritici
-Gt-CB1	GtCB1	Gaeumannomyces_avenae
-Gt14LH10	Gt14LH10	Gaeumannomyces_tritici
-Ga-86440	PO86440	Gaeumannomyces_avenae
+Gh-1B17	Gh1B17	Gaeumannomyces_hyphopodioides	Gh-1B17	RB599	SAMN36868446
+Gh-2C17	NZ1292C17	Gaeumannomyces_hyphopodioides	Gh-2C17	RB595	SAMN36868447
+Gt-19d1	Gt17LH19d1	Gaeumannomyces_tritici	Gt-19d1	RB598	SAMN36868449
+Gt-23d	Gt23d	Gaeumannomyces_tritici	Gt-23d	RB597	SAMN36868450
+Gt-3aA1	PG3aA1	Gaeumannomyces_avenae	Ga-3aA1	RB596	SAMN36868445
+Gt-4e	Gt4e	Gaeumannomyces_tritici	Gt-4e	RB593	SAMN36868451
+Gt-8d	Gt17LH48d	Gaeumannomyces_tritici	Gt-8d	RB601	SAMN36868448
+Gt-CB1	GtCB1	Gaeumannomyces_avenae	Ga-CB1	RB594	SAMN36868444	
+Gt14LH10	Gt14LH10	Gaeumannomyces_tritici Gt-LH10	RB600	SAMN36868452
