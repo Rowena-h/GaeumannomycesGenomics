@@ -557,12 +557,14 @@ for (i in 1:length(strains$strain)) {
            new.strain=metadata$new.strain[match(strain, metadata$strain)])
   
   #Calculate distances of genes to nearest TE
-  te.distances.genes <- list()
+  te.distances.noncseps <- list()
   te.distances.cseps <- list()
+  te.distances.hcn <- list()
+  te.distances.nonhcn <- list()
   
   for (j in 1:length(df.genes.split)) {
     
-    genes <- df.genes.split[[j]] %>% filter(biotype != "transposable_element_gene")
+    genes <- df.genes.split[[j]] %>% filter(biotype != "transposable_element_gene") %>% mutate(ID=sub("$", ".1", sub("-", "", ID)))
     tes <- df.te.split[[names(df.genes.split)[j]]]
     
     for (k in 1:nrow(genes)) {
@@ -615,8 +617,8 @@ for (i in 1:length(strains$strain)) {
       
       if (is.na(genes$CSEP[k])) {
         
-        te.distances.genes[[names(df.genes.split)[j]]][
-          length(te.distances.genes[[names(df.genes.split)[j]]])+1] <- distance
+        te.distances.noncseps[[names(df.genes.split)[j]]][
+          length(te.distances.noncseps[[names(df.genes.split)[j]]])+1] <- distance
         
       } else {
         
@@ -626,26 +628,48 @@ for (i in 1:length(strains$strain)) {
         
       }
       
+      if (genes$ID[k] %in% hcn.genes$gene) {
+        
+        te.distances.hcn[[names(df.genes.split)[j]]][
+          length(te.distances.hcn[[names(df.genes.split)[j]]])+1
+        ] <- distance
+        
+      } else {
+        
+        te.distances.nonhcn[[names(df.genes.split)[j]]][
+          length(te.distances.nonhcn[[names(df.genes.split)[j]]])+1] <- distance
+        
+      }
+      
     }
     
   }
   
-  print("Proportion of genes within 5Kb of TE")
-  print(length(which(unlist(te.distances.genes) < 5000)) / length(unlist(te.distances.genes)))
+  print("Proportion of non-CSEPs within 5Kb of TE")
+  print(length(which(unlist(te.distances.noncseps) < 5000)) / length(unlist(te.distances.noncseps)))
   print("Proportion of CSEPs within 5Kb of TE")
   print(length(which(unlist(te.distances.cseps) < 5000)) / length(unlist(te.distances.cseps)))
+  print("Proportion of non-HCN within 5Kb of TE")
+  print(length(which(unlist(te.distances.nonhcn) < 5000)) / length(unlist(te.distances.nonhcn)))
+  print("Proportion of HCN within 5Kb of TE")
+  print(length(which(unlist(te.distances.hcn) < 5000)) / length(unlist(te.distances.hcn)))
   
   #Combine TE distance results
-  df.te.distances <- data.frame(group=rep(c("Other genes", "CSEPs"),
-                                          c(length(unlist(te.distances.genes)),
-                                            length(unlist(te.distances.cseps)))),
-                                distance=c(unlist(te.distances.genes),
-                                           unlist(te.distances.cseps)),
+  df.te.distances <- data.frame(group=rep(c("Non-CSEP", "CSEPs", "HCN", "Non-HCN"),
+                                          c(length(unlist(te.distances.noncseps)),
+                                            length(unlist(te.distances.cseps)),
+                                            length(unlist(te.distances.hcn)),
+                                            length(unlist(te.distances.nonhcn)))),
+                                distance=c(unlist(te.distances.noncseps),
+                                           unlist(te.distances.cseps),
+                                           unlist(te.distances.hcn),
+                                           unlist(te.distances.nonhcn)),
                                 new.strain=metadata$new.strain[match(strains$strain[i], metadata$strain)])
   
   assign(paste0("df.fragments.cumulative.", strains$strain[i]), df.fragments.cumulative)
   assign(paste0("df.gc.cumulative.", strains$strain[i]), df.gc)
   assign(paste0("df.tandems.cumulative.", strains$strain[i]), df.tandems)
+  assign(paste0("df.genes.cumulative.", strains$strain[i]), df.genes)
   assign(paste0("df.gene.density.cumulative.", strains$strain[i]), df.gene.density)
   assign(paste0("df.CSEP.density.cumulative.", strains$strain[i]), df.CSEP.density)
   assign(paste0("df.hcn.cumulative.", strains$strain[i]), df.hcn)
@@ -961,18 +985,6 @@ for (hcn.hog in sort(unique(all.hcn$hog))) {
   
 }
 
-#Write to file (just GtB expansions)
-#pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/hcn_duplicates-", Sys.Date(), ".pdf"), width=7, height=3.5)
-plot_grid(gg.duplicates,
-          plot_grid(gg.hcn.hog.N0.HOG0000002 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
-                    gg.hcn.hog.N0.HOG0000012 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
-                    gg.hcn.hog.N0.HOG0000019 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
-                    gg.hcn.hog.N0.HOG0000034 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
-                    gg.hcn.hog.N0.HOG0000041 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
-                    nrow=1),
-          nrow=2, rel_heights=c(1.2, 1), labels="auto")
-#dev.off()
-
 #Write to file
 #pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/hcn_facet-", Sys.Date(), ".pdf"), width=7, height=7)
 plot_grid(plotlist=mget(ls(pattern="gg.hcn.hog.")))
@@ -1104,10 +1116,11 @@ levels(all.distances$clade) <- c("Gh"=expression(paste(italic("Gh"))),
                                  "GtA"=expression(paste(italic("Gt"), " type A")),
                                  "GtB"=expression(paste(italic("Gt"), " type B")))
 
-#Print mean distances (CSEPs versus other genes) for each strain
+#Print mean distances (CSEPs versus other genes versus HCN genes) for each strain
 all.distances %>%
   group_by(new.strain, group) %>%
-  summarise(mean=mean(distance))
+  summarise(mean=mean(distance)) %>%
+  print(n=36)
 
 #Print mean distances (all genes) for each strain
 all.distances %>%
@@ -1125,31 +1138,55 @@ for (strain in unique(all.distances$new.strain)) {
         ggtitle(paste0(strain, " CSEPs")),
       ggqqplot(all.distances$distance[
         intersect(which(all.distances$new.strain == strain),
-                  which(all.distances$group == "Other genes"))]) +
-        ggtitle(paste0(strain, " other genes"))
+                  which(all.distances$group == "Non-CSEP"))]) +
+        ggtitle(paste0(strain, " Non-CSEP")),
+      ggqqplot(all.distances$distance[
+        intersect(which(all.distances$new.strain == strain),
+                  which(all.distances$group == "HCN"))]) +
+        ggtitle(paste0(strain, " HCN")),
+      ggqqplot(all.distances$distance[
+        intersect(which(all.distances$new.strain == strain),
+                  which(all.distances$group == "Non-HCN"))]) +
+        ggtitle(paste0(strain, " Non-HCN"))
     )
   )
   
 }
 
 #Do Wilcoxon rank sum test on distance for CSEPs vs other genes for each strain
-distances.test <- all.distances %>%
+distances.cseps.test <- all.distances %>%
+  filter(group %in% c("Non-CSEP", "CSEPs")) %>%
   group_by(new.strain) %>%
   wilcox_test(distance ~ group) %>%
   mutate(label=ifelse(p < 0.05, "*", ""),
          clade=metadata$clade[match(new.strain, metadata$new.strain)],
          clade=factor(clade, levels=c("Gh", "Ga", "GtA", "GtB")))
 
-levels(distances.test$clade) <- c("Gh"=expression(paste(italic("Gh"))),
+levels(distances.cseps.test$clade) <- c("Gh"=expression(paste(italic("Gh"))),
                                   "Ga"=expression(paste(italic("Ga"))),
                                   "GtA"=expression(paste(italic("Gt"), " type A")),
                                   "GtB"=expression(paste(italic("Gt"), " type B")))
 
-#Check for normality
+#Do Wilcoxon rank sum test on distance for HCN vs other genes for each strain
+distances.hcn.test <- all.distances %>%
+  filter(group %in% c("Non-HCN", "HCN"), clade != 'paste(italic("Gt"), " type A")') %>%
+  group_by(new.strain) %>%
+  wilcox_test(distance ~ group) %>%
+  mutate(label=ifelse(p < 0.05, "*", ""),
+         clade=metadata$clade[match(new.strain, metadata$new.strain)],
+         clade=factor(clade, levels=c("Gh", "Ga", "GtB")))
+
+levels(distances.hcn.test$clade) <- c("Gh"=expression(paste(italic("Gh"))),
+                                        "Ga"=expression(paste(italic("Ga"))),
+                                        "GtB"=expression(paste(italic("Gt"), " type B")))
+
+#Check for normality (regardless of CSEP or not)
 for (strain in unique(all.distances$new.strain)) {
   
   plot(
-    ggqqplot(all.distances$distance[all.distances$new.strain == strain]) +
+    ggqqplot(all.distances %>%
+               filter(new.strain == strain, group %in% c("CSEPs", "Non-CSEP")) %>%
+               pull(distance)) +
       ggtitle(strain)
   )
   
@@ -1157,7 +1194,10 @@ for (strain in unique(all.distances$new.strain)) {
 
 #Do Games-Howell test on distances 
 distances.species.test <- all.distances %>%
-  mutate(new.strain=sub("-", "_", new.strain)) %>%
+  filter(group %in% c("CSEPs", "Non-CSEP")) %>%
+  mutate(new.strain=factor(sub("-", "_", new.strain),
+                           levels=c("Gh_1B17", "Gh_2C17", "Ga_CB1", "Ga_3aA1",
+                                    "Gt_19d1", "Gt_8d", "Gt_23d", "Gt_4e", "Gt_LH10"))) %>%
   games_howell_test(distance ~ new.strain)
 
 #Make letters labels for significance groups
@@ -1187,16 +1227,17 @@ levels(distances.species.test.labels$clade) <-
 
 
 #Plot box and violin plots for average TE-gene distance
-gg.distances <- ggplot(all.distances,
+gg.distances.cseps <- ggplot(all.distances %>% filter(group %in% c("Non-CSEP", "CSEPs")),
                        aes(x=new.strain, y=distance, fill=group)) +
   facet_grid(~clade, scales="free_x", space="free", switch="x",
              labeller=label_parsed) +
   geom_violin(position=position_dodge(width=0.8),
               linewidth=0.3,
+              alpha=0.5,
               show.legend=FALSE) +
-  geom_boxplot(width=0.1, linewidth=0.3, outlier.size=0.3,
+  geom_boxplot(width=0.1, linewidth=0.3, outlier.shape=NA,
                position=position_dodge(width=0.8)) +
-  geom_signif(data=distances.test %>% filter(label == "*"),
+  geom_signif(data=distances.cseps.test %>% filter(label == "*"),
               aes(xmin=0.8, xmax=1.2, annotations=label, y_position=160000),
               textsize=5, vjust=0.5, size=0.3,
               manual=TRUE,
@@ -1238,7 +1279,7 @@ gg.distances <- ggplot(all.distances,
 #pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/te_csep_comp-", Sys.Date(), ".pdf"), width=7, height=6.2)
 
 plot_grid(gg.te,
-          plot_grid(gg.te.cseps, gg.gene.csep, gg.distances,
+          plot_grid(gg.te.cseps, gg.gene.csep, gg.distances.cseps,
                     align="v", axis="lr", ncol=1,
                     rel_heights=c(1.1, 0.9, 2),
                     labels=c("b", "", "c")),
@@ -1247,6 +1288,70 @@ plot_grid(gg.te,
           labels=c("a", ""))
 
 #dev.off()
+
+#Plot box and violin plots for average TE-HCN distance
+gg.distances.hcn <- ggplot(all.distances %>%
+                             filter(group %in% c("Non-HCN", "HCN"),
+                                    clade != 'paste(italic("Gt"), " type A")') %>%
+                             droplevels(),
+       aes(x=new.strain, y=distance)) +
+  facet_grid(~clade, scales="free_x", space="free", switch="x",
+             labeller=label_parsed) +
+  geom_boxplot(aes(colour=group),
+               width=0.3, linewidth=0.3,
+               position=position_dodge(width=0.8),
+               outlier.size=0.3) +
+  geom_signif(data=distances.hcn.test %>%
+                filter(label == "*") %>%
+                mutate(row=row_number()) %>%
+                group_by(clade) %>%
+                mutate(id=row_number()),
+              aes(xmin=id-0.15, xmax=id+0.15, annotations=label, y_position=40000, group=row),
+              textsize=5, vjust=0.5, size=0.3,
+              tip_length=0.01,
+              manual=TRUE,
+              inherit.aes=FALSE) +
+  scale_colour_manual(values=c("#C3D6C3", "#4B854C"),
+                      labels=c("HCN genes",
+                               "Other genes")) +
+  scale_y_continuous(expand=expansion(mult=c(0, 0.1)),
+                     limits=c(0, NA),
+                     labels=comma) +
+  labs(y="Distance to closest TE (bp)") +
+  coord_cartesian(ylim=c(0, 40500)) +
+  theme_minimal() +
+  theme(strip.placement="outside",
+        strip.text=element_text(size=7, face="bold"),
+        legend.position="top",
+        legend.margin=margin(0, 0, 0, 0),
+        legend.key.size=unit(8, "pt"),
+        legend.title=element_blank(),
+        legend.text=element_text(size=7, margin=margin(0, 5, 0, 0)),
+        axis.ticks.x=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_text(size=7),
+        axis.text.y=element_text(size=5),
+        axis.text.x=element_text(size=7),
+        axis.line.y=element_line(colour="grey92",
+                                 arrow=grid::arrow(length=unit(0.13, "cm"),
+                                                   type="closed",
+                                                   ends="last")),
+        panel.grid.major.x=element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin=margin(10, 5.5, 5.5, 5.5))
+
+#Write to file (just GtB expansions)
+pdf(paste0("R://GaeumannomycesGenomics/07_comparative_genomics/hcn_duplicates-", Sys.Date(), ".pdf"), width=7, height=5)
+plot_grid(gg.duplicates,
+          plot_grid(gg.hcn.hog.N0.HOG0000002 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
+                    gg.hcn.hog.N0.HOG0000012 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
+                    gg.hcn.hog.N0.HOG0000019 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
+                    gg.hcn.hog.N0.HOG0000034 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
+                    gg.hcn.hog.N0.HOG0000041 + theme(plot.margin=margin(20, 5.5, 5.5, 5.5)),
+                    nrow=1),
+          gg.distances.hcn,
+          nrow=3, rel_heights=c(1.2, 1, 1.2), labels="auto")
+dev.off()
 
 
 ## Isoform rates ##
