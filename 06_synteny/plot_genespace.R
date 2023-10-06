@@ -755,7 +755,7 @@ riparian_engine_edit <- function(blk,
   for (i in 1:length(strains$strain)) {
     
     telomeres <- read.csv(
-      paste0("/ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/015_tapestry/",
+      paste0("/ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/014_tapestry/",
              strains$file1[i], "/", "contig_details.tsv"),
       sep="\t"
     )
