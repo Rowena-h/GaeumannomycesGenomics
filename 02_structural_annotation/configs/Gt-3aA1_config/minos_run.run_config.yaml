@@ -1,0 +1,265 @@
+prefix: minos_run
+outdir: outputs
+mikado-container: /ei/software/testing/mikado/master/x86_64/mikado-master.simg
+mikado-config-file: outputs/minos_run.mikado_config.yaml
+external-metrics: external_metrics.txt
+reference-sequence: Inputs/Reference/Gaeumannomyces_tritici_Gt-3aA1_EI_v1.1_p_ctg.fa
+blast-mode: blastp
+use-diamond: true
+use-tpm-for-picking: true
+external-metrics-data: external_metrics.txt
+annotation_version: EIv1
+genus_identifier: Gt-3aA1
+hpc_config: hpc_config_1.8.0.json
+busco_analyses:
+  proteins: true
+  transcriptome: false
+  genome: true
+  precomputed_genome: null
+  lineage: /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Reference/sordariomycetes_odb10
+data:
+  transcript_models:
+    hc_Gt-3aA1_EIv1_release_filtered: Inputs/Models/filtered/hc_Gt-3aA1_EIv1.release.filtered.gff
+    hc_Gt-3aA1_liftoff_all_Gaeumannomyces_filtered: Inputs/Models/filtered/hc_Gt-3aA1_liftoff_all_Gaeumannomyces.filtered.gff
+    lc_Gt-3aA1_EIv1_release_filtered: Inputs/Models/filtered/lc_Gt-3aA1_EIv1.release.filtered.gff
+    lc_Gt-3aA1_liftoff_all_Gaeumannomyces_filtered: Inputs/Models/filtered/lc_Gt-3aA1_liftoff_all_Gaeumannomyces.filtered.gff
+  expression-runs:
+    RNA-seq_exp_rf:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Inputs/Transcriptome/R0819-S0029_Gt3aA1_A66800_1_HL5JJDSX3_GTCCTTGA-TCAGACGA_L002_R1_1.fastq.gz
+      - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Inputs/Transcriptome/R0819-S0029_Gt3aA1_A66800_1_HL5JJDSX3_GTCCTTGA-TCAGACGA_L002_R1_2.fastq.gz
+      - /ei/data/reads/PIP-2915/220526_A00478_0222_AHL5JJDSX3/A66800_1/R0819-S0029_Gt3aA1_A66800_1_HL5JJDSX3_GTCCTTGA-TCAGACGA_L002_R1.fastq.gz
+      - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Inputs/Transcriptome/R0819-S0029_Gt3aA1_A66800_1_HL5JJDSX3_GTCCTTGA-TCAGACGA_L002_R2_1.fastq.gz
+      - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Inputs/Transcriptome/R0819-S0029_Gt3aA1_A66800_1_HL5JJDSX3_GTCCTTGA-TCAGACGA_L002_R2_2.fastq.gz
+      - /ei/data/reads/PIP-2915/220526_A00478_0222_AHL5JJDSX3/A66800_1/R0819-S0029_Gt3aA1_A66800_1_HL5JJDSX3_GTCCTTGA-TCAGACGA_L002_R2.fastq.gz
+  transcript-runs:
+    all_hisat_transcripts_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Transcriptome/cromwell-executions/ei_annotation/9cae0356-184d-4e2e-8304-20720d0be7ee/call-wf_align/wf_align/1de8e1ef-7206-4003-9df6-3e2887c88bc1/call-wf_assembly_short/wf_assembly_short/3c93bfea-5716-47cb-b437-b5ded3100f04/call-Scallop/shard-2/execution/assembly_short/all.hisat.scallop.gtf
+    all_stringtie_transcripts_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Transcriptome/cromwell-executions/ei_annotation/9cae0356-184d-4e2e-8304-20720d0be7ee/call-wf_align/wf_align/1de8e1ef-7206-4003-9df6-3e2887c88bc1/call-wf_assembly_short/wf_assembly_short/3c93bfea-5716-47cb-b437-b5ded3100f04/call-stringtie/shard-2/wf_stringtie_short/c00a3cd3-7111-4fad-b5ca-24a786bc5c97/call-Stringtie/shard-0/execution/assembly_short/all.merged.stringtie.gtf
+    Gt-3aA1_1_hisat_transcripts_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Transcriptome/cromwell-executions/ei_annotation/9cae0356-184d-4e2e-8304-20720d0be7ee/call-wf_align/wf_align/1de8e1ef-7206-4003-9df6-3e2887c88bc1/call-wf_assembly_short/wf_assembly_short/3c93bfea-5716-47cb-b437-b5ded3100f04/call-Scallop/shard-0/execution/assembly_short/Gt-3aA1_1.hisat.scallop.gtf
+    Gt-3aA1_1_stringtie_transcripts_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Transcriptome/cromwell-executions/ei_annotation/9cae0356-184d-4e2e-8304-20720d0be7ee/call-wf_align/wf_align/1de8e1ef-7206-4003-9df6-3e2887c88bc1/call-wf_assembly_short/wf_assembly_short/3c93bfea-5716-47cb-b437-b5ded3100f04/call-stringtie/shard-0/wf_stringtie_short/eee80070-47f8-4467-83cd-f12e084e4cd5/call-Stringtie/shard-0/execution/assembly_short/Gt-3aA1_1.merged.stringtie.gtf
+    Gt-3aA1_2_hisat_transcripts_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Transcriptome/cromwell-executions/ei_annotation/9cae0356-184d-4e2e-8304-20720d0be7ee/call-wf_align/wf_align/1de8e1ef-7206-4003-9df6-3e2887c88bc1/call-wf_assembly_short/wf_assembly_short/3c93bfea-5716-47cb-b437-b5ded3100f04/call-Scallop/shard-1/execution/assembly_short/Gt-3aA1_2.hisat.scallop.gtf
+    Gt-3aA1_2_stringtie_transcripts_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Transcriptome/cromwell-executions/ei_annotation/9cae0356-184d-4e2e-8304-20720d0be7ee/call-wf_align/wf_align/1de8e1ef-7206-4003-9df6-3e2887c88bc1/call-wf_assembly_short/wf_assembly_short/3c93bfea-5716-47cb-b437-b5ded3100f04/call-stringtie/shard-1/wf_stringtie_short/edf85c04-ba61-4ea3-b472-509bd756055e/call-Stringtie/shard-0/execution/assembly_short/Gt-3aA1_2.merged.stringtie.gtf
+  protein-runs:
+    GCA_000193285_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-0/execution/GCA_000193285.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_000818155_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-1/execution/GCA_000818155.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_003814445_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-2/execution/GCA_003814445.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_004337975_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-3/execution/GCA_004337975.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_016952355_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-4/execution/GCA_016952355.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_019565615_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-5/execution/GCA_019565615.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_020045945_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-6/execution/GCA_020045945.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_020631695_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-7/execution/GCA_020631695.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_023101225_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-8/execution/GCA_023101225.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCA_023278565_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-9/execution/GCA_023278565.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000002495_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-10/execution/GCF_000002495.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000149555_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-11/execution/GCF_000149555.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000182925_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-12/execution/GCF_000182925.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000226095_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-13/execution/GCF_000226095.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000226115_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-14/execution/GCF_000226115.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000240135_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-15/execution/GCF_000240135.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000303195_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-16/execution/GCF_000303195.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_000687475_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-17/execution/GCF_000687475.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_001625195_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-18/execution/GCF_001625195.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_001653235_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-19/execution/GCF_001653235.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_001672515_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-20/execution/GCF_001672515.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_004337985_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-21/execution/GCF_004337985.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_004355905_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-22/execution/GCF_004355905.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_019609905_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-23/execution/GCF_019609905.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_019915245_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-24/execution/GCF_019915245.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_022605165_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-25/execution/GCF_022605165.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+    GCF_900007375_protein_aln:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Homology/cromwell-executions/ei_homology/73092f4e-0a12-40f0-bbe8-2fccc4fbfb73/call-CombineXspecies/shard-26/execution/GCF_900007375.alignment.stop_extended.extra_attr.mgc.xspecies_scores.gff
+  protein-seqs:
+    GCA_000193285_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_000193285_pep.fasta
+    GCA_000818155_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_000818155_pep.fasta
+    GCA_003814445_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_003814445_pep.fasta
+    GCA_004337975_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_004337975_pep.fasta
+    GCA_016952355_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_016952355_pep.fasta
+    GCA_019565615_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_019565615_pep.fasta
+    GCA_020045945_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_020045945_pep.fasta
+    GCA_020631695_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_020631695_pep.fasta
+    GCA_023101225_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_023101225_pep.fasta
+    GCA_023278565_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCA_023278565_pep.fasta
+    GCF_000002495_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000002495_pep.fasta
+    GCF_000149555_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000149555_pep.fasta
+    GCF_000182925_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000182925_pep.fasta
+    GCF_000226095_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000226095_pep.fasta
+    GCF_000226115_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000226115_pep.fasta
+    GCF_000240135_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000240135_pep.fasta
+    GCF_000303195_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000303195_pep.fasta
+    GCF_000687475_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_000687475_pep.fasta
+    GCF_001625195_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_001625195_pep.fasta
+    GCF_001653235_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_001653235_pep.fasta
+    GCF_001672515_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_001672515_pep.fasta
+    GCF_004337985_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_004337985_pep.fasta
+    GCF_004355905_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_004355905_pep.fasta
+    GCF_019609905_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_019609905_pep.fasta
+    GCF_019915245_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_019915245_pep.fasta
+    GCF_022605165_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_022605165_pep.fasta
+    GCF_900007375_pep:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev/Inputs/Reference/Proteins/GCF_900007375_pep.fasta
+  junction-data:
+    all_junctions:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/Reat/Transcriptome/cromwell-executions/ei_annotation/9cae0356-184d-4e2e-8304-20720d0be7ee/call-wf_align/wf_align/1de8e1ef-7206-4003-9df6-3e2887c88bc1/call-portcullis/portcullis/f881d1f7-60c1-4d88-bb20-052f9859ec63/call-PassMerge/execution/portcullis/portcullis.pass.merged.bed
+  repeat-data:
+    repeats:
+    - - /ei/.project-scratch/d/d2c0bfb1-c37a-4211-9493-86b15d4e773e/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/Gt-3aA1/Analysis/minos-1.9.0-dev_polish/Inputs/Evidence/genome.fa.out.gff
+paths:
+  augustus_config_data: /usr/local/config
+params:
+  mikado:
+    prepare: --minimum-cdna-length 100
+    compare:
+      index: --index
+      transcripts: --extended-refmap
+      proteins: --exclude-utr --extended-refmap
+    serialise: ''
+    pick: ''
+  gffread:
+    blastp: ''
+    blastx: ''
+    default: ''
+    final: ''
+  seqkit:
+    translate: translate --threads 1 --line-width 70
+    codon_table: 1
+  cpc2: -r
+  kallisto:
+    index: ''
+    quant: -b 100
+  blast:
+    makeblastdb: -dbtype prot
+    blastp: -max_target_seqs 1 -evalue 1e-5
+    blastx: -max_target_seqs 1 -evalue 1e-5
+    tophit:
+      pident_threshold: 0.0
+      qcov_threshold: 0.0
+  diamond:
+    makedb: ''
+    blastp: --max-target-seqs 1 --evalue 1e-5
+    blastx: --max-target-seqs 1 --evalue 1e-5
+    tophit:
+      pident_threshold: 0.0
+      qcov_threshold: 0.0
+  genometools:
+    check: gff3 -sort -tidy -retainids yes -addids no
+    sort: gff3 -sort -tidy -retainids yes
+  prinseq: -min_len 1 -line_width 70
+  busco:
+    proteins_prepare: --offline --limit 4
+    proteins_final: --offline --limit 4
+    transcripts_prepare: --offline --limit 4
+    transcripts_final: --offline --limit 4
+    genome: --offline --limit 4
+misc:
+  min_cds_length: 30
+  busco_max_copy_number: 4
+  add_fields: name,note,confidence,representative,biotype,multiexonic,superlocus
+program_calls:
+  mikado: singularity exec {container} mikado {program}
+  gffread: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img
+    gffread
+  seqkit: singularity exec /ei/software/cb/seqkit/2.1.0/x86_64/seqkit-2.1.0_CBG.img
+    seqkit
+  cpc2: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img CPC2
+  kallisto: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img
+    kallisto {program}
+  blast: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img
+    {program}
+  diamond: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img
+    diamond {program}
+  genometools: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img
+    gt
+  prinseq: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img
+    prinseq-lite.pl
+  busco: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.busco.img
+    busco
+  copy_busco: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.busco.img
+    cp -r
+  bedtools:
+    coverageBed: singularity exec /ei/software/cb/containers/minos/x86_64/Singularity.img
+      coverageBed
+  time: /usr/bin/time -v
+collapse_metrics_thresholds:
+  repeat_associated: '{te_score} >= 0.4'
+  predicted_gene: '{hom_acov_score} < 0.3 and {cpc_score} < 0.25'
+  hi_confidence: '{classification} == 1 or {busco_score} == 1 or {hom_acov_score}
+    >= 0.8 or ({hom_acov_score} >= 0.6 and {transcript_score} >= 0.4)'
+  discard: '{busco_score} == 0 and {protein_score} == 0 and {transcript_score} ==
+    0 and {hom_acov_score} == 0 and ({expression_score} < 0.3 or {short_cds} == 1)'
+report_metric_oddities:
+- '{exon_num} == 1'
+- '{exon_num} > 1'
+- '{five_utr_length} >= 10000'
+- '{five_utr_num} >= 5'
+- '{three_utr_length} >= 10000'
+- '{three_utr_num} >= 4'
+- not {is_complete}
+- not {has_start_codon}
+- not {has_stop_codon}
+- '{max_exon_length} >= 10000'
+- '{max_intron_length} >= 500000'
+- '{min_exon_length} <= 5'
+- 0 < {min_intron_length} <= 5
+- '{selected_cds_fraction} <= 0.3'
+- '{canonical_intron_proportion} != 1'
+- '{non_verified_introns_num} >= 1'
+- '{only_non_canonical_splicing}'
+- '{proportion_verified_introns} <= 0.5'
+- '{suspicious_splicing}'
