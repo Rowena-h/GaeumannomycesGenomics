@@ -6,8 +6,8 @@ library(multcompView)
 library(cowplot)
 
 #Read in 42 pot experimental data
-df.plant <- read.csv("R:/GaeumannomycesGenomics/experimental_data/pot_experiment_plantlevel.csv")
-df.pot <- read.csv("R:/GaeumannomycesGenomics/experimental_data/pot_experiment_potlevel.csv")
+df.plant <- read.csv("R:/GaeumannomycesGenomics/00_experimental_data/pot_experiment_plantlevel.csv")
+df.pot <- read.csv("R:/GaeumannomycesGenomics/00_experimental_data/pot_experiment_potlevel.csv")
 
 #Format data
 df.plant.sum <- df.plant %>%
@@ -101,11 +101,11 @@ test.names <-
 gg.pots <- ggplot(df.sum, aes(x=Treatment.name, y=value)) +
   facet_wrap(~ factor(
     test,
-    levels=c(c("Height.cm", "Number.of.roots",
-               "Ear.length.cm", "Roots.per.tiller",
-               "Flag.Leaf.Length.cm", "Root.length.cm",
-               "Number.of.ears", "Average.dried.root.biomass.per.plant.g",
-               "Number.of.tillers", "TAI"))
+    levels=c(c("TAI", "Height.cm", 
+               "Number.of.roots", "Ear.length.cm",
+               "Roots.per.tiller", "Flag.Leaf.Length.cm",
+               "Root.length.cm", "Number.of.ears",
+               "Average.dried.root.biomass.per.plant.g", "Number.of.tillers"))
   ),
   scales="free_y",
   ncol=2,
@@ -133,11 +133,11 @@ gg.pots <- ggplot(df.sum, aes(x=Treatment.name, y=value)) +
         strip.text=element_text(size=5, face="bold"))
 
 #Write to file
-pdf(file=paste0("R:/GaeumannomycesGenomics/experimental_data/pot_experiment-", Sys.Date(), ".pdf"),
+pdf(file=paste0("R:/GaeumannomycesGenomics/00_experimental_data/pot_experiment-", Sys.Date(), ".pdf"),
      height=6, width=3.5)
 ggarrange(
   ggdraw(gg.pots) + 
-    draw_label("Above-ground", size=8, fontface="bold", x=0.28, y=0.915) + 
-    draw_label("Below-ground", size=8, fontface="bold", x=0.76, y=0.915),
+    draw_label("Above-ground", size=8, fontface="bold", x=0.76, y=0.915) + 
+    draw_label("Below-ground", size=8, fontface="bold", x=0.28, y=0.915),
   labels="c")
 dev.off()
