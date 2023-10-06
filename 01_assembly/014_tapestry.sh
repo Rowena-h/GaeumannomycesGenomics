@@ -8,7 +8,7 @@
 #SBATCH --mail-user=rowena.hill@earlham.ac.uk   # send-to address
 
 strain_file=$(awk '{print $2}' ../strains | sed -n ${SLURM_ARRAY_TASK_ID}p)
-out_dir=../scratch/015_tapestry/${strain_file}
+out_dir=../scratch/014_tapestry/${strain_file}
 
 #Make output directory
 mkdir -p ${out_dir}
