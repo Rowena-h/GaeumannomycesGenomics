@@ -1,6 +1,8 @@
 library(tidyverse)
 library(Gviz)
 library(rtracklayer)
+library(scales)
+library(ggpubr)
 
 options(ucscChromosomeNames=FALSE)
 
@@ -102,4 +104,30 @@ dev.off()
 pdf(paste0("R://GaeumannomycesGenomics/06_synteny/Gt-LH10_fusion_coverage_4_", Sys.Date(), ".pdf"),
      width=7, height=4)
 plotTracks(list(gt, annoT.4, at.4), from=500000, to=1500000, sizes=c(1, 1, 8), title.width=0.5)
+dev.off()
+
+
+#Read in tidk results
+tidk <- read.csv("S://014_tidk/Gt14LH10/Gt14LH10_telomeric_repeat_windows.tsv", sep="\t") %>%
+  filter(id %in% c("ptg000001l", "ptg000004l")) %>%
+  mutate(id=sub("ptg000004l", "pseu. chr. 3B", sub("ptg000001l", "pseu. chr. 2B", id))) %>%
+  mutate(total=forward_repeat_number + reverse_repeat_number)
+
+#Plot telomeric repeats
+gg.tidk <- ggplot(tidk, aes(x=window, y=total)) +
+  facet_wrap(~id, nrow=2, strip.position="right") +
+  geom_line() +
+  scale_x_continuous(labels=label_number(scale=1e-6, suffix="Mbp")) +
+  labs(y="Number of telomeric repeats") +
+  theme_minimal() +
+  theme(strip.text=element_text(size=7),
+        axis.title.x=element_blank(),
+        axis.title.y=element_text(size=7),
+        axis.text=element_text(size=5),
+        panel.spacing=unit(0.8, "lines"),
+        panel.grid.minor=element_blank())
+
+pdf(paste0("R://GaeumannomycesGenomics/06_synteny/Gt-LH10_tidk_", Sys.Date(), ".pdf"),
+    width=7, height=2)
+ggarrange(gg.tidk, labels="b")
 dev.off()
