@@ -1,0 +1,389 @@
+requirements:
+  expression: [(combined_cds_fraction.coding or selected_cds_length.multi), and, (five_utr_length and three_utr_length) and, ((exon_num.multi and  (cdna_length.multi, or,  combined_cds_length.multi) and max_intron_length, and (is_complete or selected_cds_length.multi or combined_cds_fraction.ncrna)) or (exon_num.mono and ((combined_cds_length.mono or cdna_length.mono) and (selected_cds_fraction.mono and (is_complete or selected_cds_length.mono))))) ]
+  parameters:
+    combined_cds_fraction.ncrna: {operator: eq, value: 0}
+    combined_cds_fraction.coding: {operator: gt, value: 0.20}
+    selected_cds_fraction.mono: {operator: gt, value: 0.40}
+    cdna_length.mono: {operator: gt, value: 300}
+    cdna_length.multi: {operator: ge, value: 200}
+    combined_cds_length.mono: {operator: gt, value: 90}
+    combined_cds_length.multi: {operator: gt, value: 90}
+    selected_cds_length.mono: {operator: gt, value: 900}
+    selected_cds_length.multi: {operator: gt, value: 600}
+    exon_num.mono: {operator: eq, value: 1}
+    exon_num.multi: {operator: gt, value: 1}
+    max_intron_length: {operator: le, value: 20000}
+    five_utr_length: {operator: gt, value: 10}
+    three_utr_length: {operator: gt, value: 10}
+#    combined_utr_length: {operator: ge, value: 0}
+#    min_intron_length: {operator: ge, value: 5}
+#    proportion_verified_introns_inlocus.multi: {operator: gt, value: 0}
+#    proportion_verified_introns.multi: {operator: gt, value: 0}
+    is_complete: {operator: eq, value: true}    
+cds_requirements:
+  expression: [combined_cds_length]
+  parameters:
+    combined_cds_length: {operator: ge, value: 0}
+as_requirements:
+  expression: [cdna_length and three_utr_length and five_utr_length and utr_length and suspicious_splicing and max_intron_length and max_exon_length and is_complete and three_utr_num and five_utr_num]
+  parameters:
+    cdna_length: {operator: ge, value: 200}
+    utr_length: {operator: le, value: 2000}
+    five_utr_length: {operator: le, value: 4000}
+    three_utr_length: {operator: le, value: 4000}
+    suspicious_splicing: {operator: ne, value: true}
+    max_intron_length: {operator: le, value: 5000}
+    max_exon_length: {operator: le, value: 10000}
+    three_utr_num: {operator: lt, value: 3}
+    five_utr_num: {operator: lt, value: 4}
+    is_complete: {operator: eq, value: true}
+not_fragmentary:
+  # expression: [combined_cds_length]
+  expression: [((exon_num.multi and (combined_cds_length.multi or external.2_dpi_hisat_transcripts_aln_aF1 or external.2_dpi_stringtie_transcripts_aln_aF1 or external.4_dpi_hisat_transcripts_aln_aF1 or external.4_dpi_stringtie_transcripts_aln_aF1 or external.5_dpi_hisat_transcripts_aln_aF1 or external.5_dpi_stringtie_transcripts_aln_aF1 or external.all_hisat_transcripts_aln_aF1 or external.all_stringtie_transcripts_aln_aF1 or external.Gh-2C17_1_hisat_transcripts_aln_aF1 or external.Gh-2C17_1_stringtie_transcripts_aln_aF1 or external.Gh-2C17_2_hisat_transcripts_aln_aF1 or external.Gh-2C17_2_stringtie_transcripts_aln_aF1 or external.GCA_000193285_protein_aln_aF1 or external.GCA_000818155_protein_aln_aF1 or external.GCA_003814445_protein_aln_aF1 or external.GCA_004337975_protein_aln_aF1 or external.GCA_016952355_protein_aln_aF1 or external.GCA_019565615_protein_aln_aF1 or external.GCA_020045945_protein_aln_aF1 or external.GCA_020631695_protein_aln_aF1 or external.GCA_023101225_protein_aln_aF1 or external.GCA_023278565_protein_aln_aF1 or external.GCF_000002495_protein_aln_aF1 or external.GCF_000149555_protein_aln_aF1 or external.GCF_000182925_protein_aln_aF1 or external.GCF_000226095_protein_aln_aF1 or external.GCF_000226115_protein_aln_aF1 or external.GCF_000240135_protein_aln_aF1 or external.GCF_000303195_protein_aln_aF1 or external.GCF_000687475_protein_aln_aF1 or external.GCF_001625195_protein_aln_aF1 or external.GCF_001653235_protein_aln_aF1 or external.GCF_001672515_protein_aln_aF1 or external.GCF_004337985_protein_aln_aF1 or external.GCF_004355905_protein_aln_aF1 or external.GCF_019609905_protein_aln_aF1 or external.GCF_019915245_protein_aln_aF1 or external.GCF_022605165_protein_aln_aF1 or external.GCF_900007375_protein_aln_aF1 or external.GCA_000193285_pep_tCov or external.GCA_000818155_pep_tCov or external.GCA_003814445_pep_tCov or external.GCA_004337975_pep_tCov or external.GCA_016952355_pep_tCov or external.GCA_019565615_pep_tCov or external.GCA_020045945_pep_tCov or external.GCA_020631695_pep_tCov or external.GCA_023101225_pep_tCov or external.GCA_023278565_pep_tCov or external.GCF_000002495_pep_tCov or external.GCF_000149555_pep_tCov or external.GCF_000182925_pep_tCov or external.GCF_000226095_pep_tCov or external.GCF_000226115_pep_tCov or external.GCF_000240135_pep_tCov or external.GCF_000303195_pep_tCov or external.GCF_000687475_pep_tCov or external.GCF_001625195_pep_tCov or external.GCF_001653235_pep_tCov or external.GCF_001672515_pep_tCov or external.GCF_004337985_pep_tCov or external.GCF_004355905_pep_tCov or external.GCF_019609905_pep_tCov or external.GCF_019915245_pep_tCov or external.GCF_022605165_pep_tCov or external.GCF_900007375_pep_tCov)), or, (exon_num.mono and (combined_cds_length.mono or external.2_dpi_hisat_transcripts_aln_aF1 or external.2_dpi_stringtie_transcripts_aln_aF1 or external.4_dpi_hisat_transcripts_aln_aF1 or external.4_dpi_stringtie_transcripts_aln_aF1 or external.5_dpi_hisat_transcripts_aln_aF1 or external.5_dpi_stringtie_transcripts_aln_aF1 or external.all_hisat_transcripts_aln_aF1 or external.all_stringtie_transcripts_aln_aF1 or external.Gh-2C17_1_hisat_transcripts_aln_aF1 or external.Gh-2C17_1_stringtie_transcripts_aln_aF1 or external.Gh-2C17_2_hisat_transcripts_aln_aF1 or external.Gh-2C17_2_stringtie_transcripts_aln_aF1 or external.GCA_000193285_protein_aln_aF1 or external.GCA_000818155_protein_aln_aF1 or external.GCA_003814445_protein_aln_aF1 or external.GCA_004337975_protein_aln_aF1 or external.GCA_016952355_protein_aln_aF1 or external.GCA_019565615_protein_aln_aF1 or external.GCA_020045945_protein_aln_aF1 or external.GCA_020631695_protein_aln_aF1 or external.GCA_023101225_protein_aln_aF1 or external.GCA_023278565_protein_aln_aF1 or external.GCF_000002495_protein_aln_aF1 or external.GCF_000149555_protein_aln_aF1 or external.GCF_000182925_protein_aln_aF1 or external.GCF_000226095_protein_aln_aF1 or external.GCF_000226115_protein_aln_aF1 or external.GCF_000240135_protein_aln_aF1 or external.GCF_000303195_protein_aln_aF1 or external.GCF_000687475_protein_aln_aF1 or external.GCF_001625195_protein_aln_aF1 or external.GCF_001653235_protein_aln_aF1 or external.GCF_001672515_protein_aln_aF1 or external.GCF_004337985_protein_aln_aF1 or external.GCF_004355905_protein_aln_aF1 or external.GCF_019609905_protein_aln_aF1 or external.GCF_019915245_protein_aln_aF1 or external.GCF_022605165_protein_aln_aF1 or external.GCF_900007375_protein_aln_aF1 or external.GCA_000193285_pep_tCov or external.GCA_000818155_pep_tCov or external.GCA_003814445_pep_tCov or external.GCA_004337975_pep_tCov or external.GCA_016952355_pep_tCov or external.GCA_019565615_pep_tCov or external.GCA_020045945_pep_tCov or external.GCA_020631695_pep_tCov or external.GCA_023101225_pep_tCov or external.GCA_023278565_pep_tCov or external.GCF_000002495_pep_tCov or external.GCF_000149555_pep_tCov or external.GCF_000182925_pep_tCov or external.GCF_000226095_pep_tCov or external.GCF_000226115_pep_tCov or external.GCF_000240135_pep_tCov or external.GCF_000303195_pep_tCov or external.GCF_000687475_pep_tCov or external.GCF_001625195_pep_tCov or external.GCF_001653235_pep_tCov or external.GCF_001672515_pep_tCov or external.GCF_004337985_pep_tCov or external.GCF_004355905_pep_tCov or external.GCF_019609905_pep_tCov or external.GCF_019915245_pep_tCov or external.GCF_022605165_pep_tCov or external.GCF_900007375_pep_tCov)))]
+  parameters:
+    is_complete: {operator: eq, value: true}
+    exon_num.multi: {operator: gt, value: 1}
+    # cdna_length.multi: {operator: ge, value: 200}
+    combined_cds_length.multi: {operator: gt, value: 300}
+    exon_num.mono: {operator: eq, value: 1}
+    combined_cds_length.mono: {operator: gt, value: 300}
+    # combined_cds_length: {operator: gt, value: 300}
+    external.2_dpi_hisat_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.2_dpi_stringtie_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.4_dpi_hisat_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.4_dpi_stringtie_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.5_dpi_hisat_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.5_dpi_stringtie_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.all_hisat_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.all_stringtie_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.Gh-2C17_1_hisat_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.Gh-2C17_1_stringtie_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.Gh-2C17_2_hisat_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.Gh-2C17_2_stringtie_transcripts_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_000193285_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_000818155_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_003814445_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_004337975_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_016952355_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_019565615_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_020045945_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_020631695_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_023101225_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_023278565_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000002495_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000149555_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000182925_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000226095_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000226115_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000240135_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000303195_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_000687475_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_001625195_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_001653235_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_001672515_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_004337985_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_004355905_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_019609905_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_019915245_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_022605165_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCF_900007375_protein_aln_aF1: {operator: gt, value: 0.5}
+    external.GCA_000193285_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_000818155_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_003814445_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_004337975_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_016952355_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_019565615_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_020045945_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_020631695_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_023101225_pep_tCov: {operator: gt, value: 0.8}
+    external.GCA_023278565_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000002495_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000149555_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000182925_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000226095_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000226115_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000240135_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000303195_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_000687475_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_001625195_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_001653235_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_001672515_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_004337985_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_004355905_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_019609905_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_019915245_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_022605165_pep_tCov: {operator: gt, value: 0.8}
+    external.GCF_900007375_pep_tCov: {operator: gt, value: 0.8}
+scoring:
+  # external metrics START
+  external.RNA-seq_exp_rf: {rescaling: max, multiplier: 0.2}
+  #external.2_dpi_hisat_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.2_dpi_hisat_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.2_dpi_hisat_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.2_dpi_hisat_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.2_dpi_stringtie_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.2_dpi_stringtie_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.2_dpi_stringtie_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.2_dpi_stringtie_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.4_dpi_hisat_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.4_dpi_hisat_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.4_dpi_hisat_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.4_dpi_hisat_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.4_dpi_stringtie_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.4_dpi_stringtie_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.4_dpi_stringtie_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.4_dpi_stringtie_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.5_dpi_hisat_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.5_dpi_hisat_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.5_dpi_hisat_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.5_dpi_hisat_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.5_dpi_stringtie_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.5_dpi_stringtie_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.5_dpi_stringtie_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.5_dpi_stringtie_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.all_hisat_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.all_hisat_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.all_hisat_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.all_hisat_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.all_stringtie_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.all_stringtie_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.all_stringtie_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.all_stringtie_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_1_hisat_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_1_hisat_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_1_hisat_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.Gh-2C17_1_hisat_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_1_stringtie_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_1_stringtie_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_1_stringtie_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.Gh-2C17_1_stringtie_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_2_hisat_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_2_hisat_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_2_hisat_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.Gh-2C17_2_hisat_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_2_stringtie_transcripts_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_2_stringtie_transcripts_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.Gh-2C17_2_stringtie_transcripts_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.Gh-2C17_2_stringtie_transcripts_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_000193285_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_000193285_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_000193285_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_000193285_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_000818155_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_000818155_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_000818155_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_000818155_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_003814445_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_003814445_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_003814445_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_003814445_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_004337975_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_004337975_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_004337975_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_004337975_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_016952355_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_016952355_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_016952355_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_016952355_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_019565615_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_019565615_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_019565615_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_019565615_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_020045945_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_020045945_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_020045945_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_020045945_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_020631695_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_020631695_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_020631695_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_020631695_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_023101225_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_023101225_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_023101225_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_023101225_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_023278565_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_023278565_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCA_023278565_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_023278565_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000002495_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000002495_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000002495_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000002495_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000149555_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000149555_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000149555_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000149555_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000182925_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000182925_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000182925_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000182925_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000226095_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000226095_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000226095_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000226095_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000226115_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000226115_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000226115_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000226115_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000240135_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000240135_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000240135_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000240135_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000303195_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000303195_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000303195_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000303195_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000687475_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000687475_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_000687475_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_000687475_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001625195_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001625195_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001625195_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_001625195_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001653235_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001653235_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001653235_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_001653235_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001672515_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001672515_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_001672515_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_001672515_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_004337985_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_004337985_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_004337985_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_004337985_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_004355905_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_004355905_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_004355905_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_004355905_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_019609905_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_019609905_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_019609905_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_019609905_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_019915245_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_019915245_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_019915245_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_019915245_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_022605165_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_022605165_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_022605165_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_022605165_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_900007375_protein_aln_nF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_900007375_protein_aln_jF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  #external.GCF_900007375_protein_aln_eF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCF_900007375_protein_aln_aF1: {rescaling: max, use_raw: true, multiplier: 0.5}
+  external.GCA_000193285_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_000193285_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_000818155_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_000818155_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_003814445_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_003814445_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_004337975_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_004337975_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_016952355_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_016952355_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_019565615_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_019565615_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_020045945_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_020045945_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_020631695_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_020631695_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_023101225_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_023101225_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCA_023278565_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCA_023278565_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000002495_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000002495_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000149555_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000149555_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000182925_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000182925_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000226095_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000226095_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000226115_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000226115_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000240135_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000240135_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000303195_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000303195_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_000687475_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_000687475_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_001625195_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_001625195_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_001653235_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_001653235_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_001672515_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_001672515_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_004337985_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_004337985_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_004355905_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_004355905_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_019609905_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_019609905_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_019915245_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_019915245_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_022605165_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_022605165_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.GCF_900007375_pep_qCov: {rescaling: max, use_raw: true, multiplier: 0.2}
+  external.GCF_900007375_pep_tCov: {rescaling: max, use_raw: true, multiplier: 1}
+  external.cpc: {rescaling: max, use_raw: true, multiplier: 1}
+  #external.busco_proteins: {rescaling: max, use_raw: true, multiplier: 3}
+  # external metrics END
+  # internal metrics START
+  # cdna_length: {rescaling: max}
+  five_utr_length:
+    filter: {operator: le, value: 1500}
+    rescaling: target
+    value: 400
+    multiplier: 3
+  five_utr_num:
+    filter: {operator: gt, value: 2}
+    rescaling: max
+    multiplier: -5
+  end_distance_from_junction:
+    filter: {operator: gt, value: 55}
+    rescaling: max
+    multiplier: -2
+  # highest_cds_exon_number: {rescaling: max}
+  is_complete: {rescaling: target, value: true, multiplier: 6}
+  non_verified_introns_num: 
+    rescaling: max
+    multiplier: -10
+    filter: {operator: gt, value: 1, metric: exon_num}
+  proportion_verified_introns_inlocus:
+    rescaling: min
+    multiplier: -2
+    filter: {operator: gt, value: 1, metric: exon_num}
+  selected_cds_fraction: {rescaling: target, value: 0.7, multiplier: 5}
+  # selected_cds_intron_fraction: {rescaling: max}
+  selected_cds_length: {rescaling: max, multiplier: 5}
+  selected_cds_num: {rescaling: max, multiplier: 2}
+  num_introns_greater_than_max: {rescaling: max, multiplier: -5, filter: {operator: gt, value: 0}}
+  three_utr_length:
+    filter: {operator: le, value: 1500}
+    rescaling: target
+    value: 800
+    multiplier: 3
+  three_utr_num:
+    filter: {operator: gt, value: 2}
+    rescaling: max
+    multiplier: -7
+  utr_length:
+    filter: {operator: gt, value: 1500}
+    rescaling: max
+    multiplier: -5
+  utr_fraction:
+    filter: {operator: gt, value: 0.5}
+    rescaling: max
+    multiplier: -2
+  min_exon_length: 
+    filter: {operator: lt, value: 20}
+    rescaling: min
+    multiplier: -2
+  max_intron_length:
+    filter: {operator: gt, value: 1000}
+    rescaling: max
+    multiplier: -3
+  # combined_cds_locus_fraction: {rescaling: max}
+  # internal metrics END
