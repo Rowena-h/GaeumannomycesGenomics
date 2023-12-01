@@ -16,5 +16,5 @@ strains=$(awk '{print $1}' ../strains)
 #Run QUAST for contiguity statistics
 quast	${asm_files} \
 	-l $(echo ${strains}| sed 's/ /,/g') \
-	-o ../scratch/014_quast/gaeumannomyces_final_quast_results \
+	-o ../scratch/013_quast/gaeumannomyces_final_quast_results \
 	-t ${SLURM_CPUS_PER_TASK} --fungus
