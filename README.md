@@ -72,7 +72,7 @@ The pipeline was written for and run on Norwich BioScience Institutes' HPC clust
 
 5. `sbatch -a 1-9 005_CSEP_prediction.sh` submits a suite of tools that feed into CSEP prediction: `deepsig.sh` ([DeepSig](https://github.com/BolognaBiocomp/deepsig)), `deeploc.sh` ([DeepLoc](https://services.healthtech.dtu.dk/services/DeepLoc-1.0/)), `effectorp1.sh` ([EffectorP v1](https://github.com/JanaSperschneider/EffectorP-1.0)), `effectorp2.sh` ([EffectorP v2](https://github.com/JanaSperschneider/EffectorP-2.0)), `effectorp3.sh` ([EffectorP v3](https://github.com/JanaSperschneider/EffectorP-3.0)), `phobius.sh` ([Phobius](https://phobius.sbc.su.se/)), [`ps_scan.sh`](https://github.com/ebi-pf-team/interproscan/blob/master/core/jms-implementation/support-mini-x86-32/bin/prosite/ps_scan.pl), `signalp3.sh` ([SignalP v3](https://services.healthtech.dtu.dk/services/SignalP-3.0/)), `signalp4.sh` ([SignalP v4.1](https://services.healthtech.dtu.dk/services/SignalP-4.1/)), `signalp6.sh` ([SignalP v6](https://services.healthtech.dtu.dk/services/SignalP-6.0/)), `targetp.sh` ([TargetP](https://services.healthtech.dtu.dk/services/TargetP-2.0/)), `tmhmm.sh` ([TMHMM](https://services.healthtech.dtu.dk/services/TMHMM-2.0/)).
 6. `sbatch 006_CSEPfilter.sh` runs `CSEPfilter` to produce a list of CSEPs from the outputs of tools listed above.
-7. `sbatch -a 1-9 007_blast.sh` searches CSEP sequences against the [PHI-base database](http://www.phi-base.org/) (requires `phi-base_current.fas` and `phi-base_current.csv` to be downloaded into this directory from [here](http://www.phi-base.org/downloadLink.htm)). Also searches for avenacinase gene in protein sets.
+7. `sbatch -a 1-9 007_blast.sh` searches CSEP sequences against the [PHI-base database](http://www.phi-base.org/) (requires `phi-base_current.fas` and `phi-base_current.csv` to be downloaded into this directory from [here](http://www.phi-base.org/downloadLink.htm)). Also searches for avenacinase gene and MAT loci in assemblies.
 
 ## 4 Phylogenetic classification
 
@@ -108,7 +108,7 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 1. `sbatch 001_genespace.sh` formats protein and gff3 files and submits `genespace.R` to infer synteny between strains using [GENESPACE](https://github.com/jtlovell/GENESPACE).
 2. `sbatch 002_gc.sh` calculates GC content in 100,000 bp windows across each genome using [bedtools](https://github.com/arq5x/bedtools2).
-3. `sbatch 003_contigs2pseudochromosomes.sh` replaces fragment names according to pseudochromosomes inferred from GENESPACE, as recorded in `pseudochromosomes.tsv`.
+3. `sbatch 003_RIP.sh` calculates the composite RIP index (CRI) across each genomes using [this perl script](https://github.com/hyphaltip/fungaltools/tree/master/scripts).
 4. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
 
 ## 7 Comparative genomics
