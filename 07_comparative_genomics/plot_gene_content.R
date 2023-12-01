@@ -117,14 +117,14 @@ for (i in c("orthogroup", "CSEP", "CAZyme", "BGC")){
   
   print(i)
   lifestyle.data <- read.csv(
-    paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/", i, "/data.csv"),
+    paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/lifestyle_permanova/", i, "/data.csv"),
     row.names="genome"
   )
   #Make distance matrix of orthogroup content
   dist <- vegdist(lifestyle.data, method="jaccard")
   #Read in lifestyle test results
   phy.pca.result <- read.csv(
-    paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/", i, "/metadata.csv")
+    paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/lifestyle_permanova/", i, "/metadata.csv")
   )
   #Do permanova
   permanova <- adonis2(formula=dist ~ PC1 + PC2 + lifestyle,
@@ -539,7 +539,7 @@ gg.dummy <- ggplot(
   aes(x=0, y=0, colour=colour)) +
   geom_point(size=3) +
   scale_colour_manual(values=c("#87AE88", "#edb945")) +
-  labs(colour="Distribution of genes with\ncopy number outliers (>10)") +
+  labs(colour="Distribution of genes with\ncopy-number outliers (>10)") +
   theme_minimal() +
   theme(legend.title=element_text(size=6, face="bold"),
         legend.key.size=unit(0.4, "cm"),

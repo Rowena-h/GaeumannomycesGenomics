@@ -10,7 +10,7 @@
 for group in orthogroup CSEP CAZyme BGC
 do
 
-	out_dir=${group}
+	out_dir=lifestyle_permanova/${group}
 
 	#Make output directory
 	mkdir -p ${out_dir}
