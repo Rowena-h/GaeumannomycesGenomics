@@ -231,15 +231,15 @@ coord_cartesian(clip="off") +
         legend.margin=margin(0, 0, 0, 0))
 
 #Write to file
-pdf(file=paste0("R://GaeumannomycesGenomics/05_phylogenomics/trees-", Sys.Date(), ".pdf"),
-    height=7, width=7)
+#pdf(file=paste0("R://GaeumannomycesGenomics/05_phylogenomics/trees-", Sys.Date(), ".pdf"),
+#    height=7, width=7)
 wrap_elements(gg.gdo.tree + gg.its2.tree + 
                   plot_annotation(title="a") &
                   theme(plot.title=element_text(face="bold"))) /
   wrap_elements(gg.species.tree + 
                   plot_annotation(title="b") &
                   theme(plot.title=element_text(face="bold")))
-dev.off()
+#dev.off()
 
 
 ## R3-111-a comparison ##
@@ -258,6 +258,34 @@ gg.gene.numbers <- ggplot(metadata, aes(y=tip, x=genes)) +
                      labels=comma) +
   theme_minimal() +
   theme(axis.title.x=element_text(size=7, face="bold"),
+        axis.title.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text=element_blank(),
+        panel.grid.major.x=element_blank(),
+        panel.grid.minor.x=element_blank(),
+        panel.grid.major.y=element_blank())
+
+#Read in N50 stats
+assembly.stats <- read.csv("S:/013_quast/gaeumannomyces_final_quast_results/transposed_report.tsv", sep="\t") %>%
+  add_row(Assembly="R3-111a-1", N50=48943) %>%
+  mutate(new.strain=metadata$new.strain[match(Assembly, metadata$strain)],
+         tip=metadata$tip[match(new.strain, metadata$new.strain)])
+
+#Plot bargraph of N50
+gg.N50 <- ggplot(assembly.stats, aes(y=tip, x=N50)) +
+  geom_bar(stat="identity", width=0.6) +
+  geom_label(aes(label=format(round(N50*1e-6, 2), 2)), 
+             position=position_stack(vjust=0.5),
+             size=1.5,
+             label.padding=unit(0.1, "lines"),
+             colour="#595959") +
+  labs(x="N50 (Mbp)") +
+  scale_x_continuous(expand=c(0, 0),
+                     position="top",
+                     labels=comma) +
+  coord_cartesian(clip="off") +
+  theme_minimal() +
+  theme(axis.title.x=element_text(size=6, face="bold"),
         axis.title.y=element_blank(),
         axis.ticks.y=element_blank(),
         axis.text=element_blank(),
@@ -338,12 +366,12 @@ gg.species.tree.comp <- ggtree(species.tree, linetype=NA, branch.length="none") 
                 fontsize=3,
                 barsize=0.8,
                 align=TRUE,
-                offset=7,
+                offset=9,
                 offset.text=0.5) +
   scale_fill_manual(values=c("#F5F5F5", "#ECECEC")) +
   geom_tree(aes(linetype=ifelse(as.numeric(label) < 70, "insig", NA)),
             show.legend=FALSE) +
-  xlim(0, 15) +
+  xlim(0, 20) +
   scale_linetype_manual(values="11", 
                         na.value="solid") +
   geom_tiplab(aes(label=new.label),
@@ -359,16 +387,17 @@ gg.species.tree.comp <- ggtree(species.tree, linetype=NA, branch.length="none") 
                  fill=NA,
                  colour="black",
                  linetype="dashed",
-                 alpha=0, extend=28.9,
+                 alpha=0, extend=49,
                  show.legend=FALSE)
 
 #Write to file
-pdf(paste0("R://GaeumannomycesGenomics/05_phylogenomics/annotation_comp-", Sys.Date(), ".pdf"), width=8, height=4)
+#pdf(paste0("R://GaeumannomycesGenomics/05_phylogenomics/annotation_comp-", Sys.Date(), ".pdf"), width=8, height=4)
 
 gg.gene.numbers %>% 
   insert_left(gg.species.tree.comp, width=2.7) %>%
   insert_right(gg.annotation.proportion) %>%
-  insert_right(gg.unassigned.genes)
+  insert_right(gg.unassigned.genes) %>%
+  insert_right(gg.N50)
 
-dev.off()
+#dev.off()
 
