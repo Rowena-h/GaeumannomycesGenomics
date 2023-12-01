@@ -11,7 +11,6 @@ source lmod-6.1
 ml kat/2.3.4
 
 strain_file=$(awk '{print $2}' ../strains | sed -n ${SLURM_ARRAY_TASK_ID}p)
-orig_strain=$(echo ${strain_file} | sed 's/_.*$//')
 out_dir=../scratch/011_kat_comp/${strain_file}
 asm_file=../scratch/010_filter_lowcov/${strain_file}/${strain_file}.asm.bp.p_ctg.hifi_sect_filtered.fa
 reads_file=../scratch/hifi-reads/*${strain_file}_hifi.fastq.gz
