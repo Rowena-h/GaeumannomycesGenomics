@@ -86,11 +86,8 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 ### Alignment and ML tree building
 
-2. `sbatch 002_align_multicopy.sh` makes gene alignments for gdo and ITS2 for distinguishing *Gaeumannomyces* genetic groups using [MAFFT](https://github.com/GSLBiotech/mafft).
+2. `sbatch 002_align_multicopy.sh` makes gene alignments using [MAFFT](https://github.com/GSLBiotech/mafft) for gdo and ITS2 for distinguishing *Gaeumannomyces* genetic groups and the avenacinase gene.
 3. `sbatch 003_raxmlng_genetree.sh` builds ML gene trees for each marker using [RAxML-NG](https://github.com/amkozlov/raxml-ng) with bootstrapping until convergence or up to 1,000 replicates (whichever first).
-4. `sbatch 004_align_singlecopy.sh` uses MAFFT to align single-copy markers and a single copy of the multi-copy markers from the previous alignments. Gene alignments are manually checked with [AliView](https://github.com/AliView/AliView), and `file_prep.sh` contains example one-liners for formatting sequence headers in each of the gene alignment fasta files so that they are identical across different genes (i.e. removing GenBank accessions; removing misc text after taxon names/vouchers; replacing spaces with underscores etc).
-5. `sbatch 005_concat.sh` concatenates gene alignments using [AMAS](https://github.com/marekborowiec/AMAS).
-6. `sbatch 006_raxmlng_speciestree.sh` builds ML species trees using RAXML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
 
 ## 5 Phylogenomics
 
@@ -118,8 +115,11 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 1. `sbatch 001_orthogroup_assignment.sh` submits `orthogroup_assigner.R` which makes abundance matrices of HOGs from OrthoFinder.
 2. `sbatch 002_big-scape.sh` predicts biosynthetic gene clusters from earlier antiSMASH output using [BiG-SCAPE](https://github.com/medema-group/BiG-SCAPE).
 3. `sbatch 003_lifestyle_test.sh` submits `lifestyle_v_phylogeny.R` which prepares input files and submits `permanova.sh`, a PERMANOVA-based test comparing the effect of phylogeny versus lifestyle on gene variance. `run_edited.py` is modified from the original script `run.py` by [Mesny &amp; Vannier](https://github.com/fantin-mesny/Effect-Of-Biological-Categories-On-Genomes-Composition).
-4. `Rscript go_enrichment.R` runs a GO term enrichment of high copy-number HOGs using [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html).
-5. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
+4. `sbatch 004_starfish.sh` predicts Starship giant mobile elements using [starfish](https://github.com/egluckthaler/starfish).
+5. `sbatch 005_align_tyr.sh` aligns tyrosine recombinase genes predicted by starfish using MAFFT and trims alignments using [trimAl](https://github.com/inab/trimal).
+6. `sbatch 006_raxmlng_tyr.sh` builds an ML gene tree for tyrosine recombinases using RAxML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
+7. `Rscript go_enrichment.R` runs a GO term enrichment of high copy-number HOGs using [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html).
+8. Scripts to plot figures: `plot_ideograms.R`, `plot_gene_content.R`
 
 ## Citation
 
