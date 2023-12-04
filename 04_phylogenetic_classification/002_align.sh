@@ -16,15 +16,15 @@ for marker in $(cat markers)
 do
 
 	if [[ -f "${out_dir}/${marker}_genetree.fasta" ]]
-        then
+	then
 
-                #Create alignment
-                mafft ${out_dir}/${marker}_genetree.fasta > ${out_dir}/${marker}_genetree_aln.fasta
+		#Create alignment
+		mafft ${out_dir}/${marker}_genetree.fasta > ${out_dir}/${marker}_genetree_aln.fasta
 
-                #Convert leading or trailing gaps to ?s
-                awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' ${out_dir}/${marker}_genetree_aln.fasta | \
-                awk -F '[^-](.*[^-]|$)' '{s=$0; h=gsub(/./,"?",$1); t=gsub(/./,"?",$2); print $1 substr(s,h+1, length(s)-h-t) $2}' > tmp.fa && mv tmp.fa ${out_dir}/${marker}_genetree_aln.fasta
+		#Convert leading or trailing gaps to ?s
+		awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' ${out_dir}/${marker}_genetree_aln.fasta | \
+			awk -F '[^-](.*[^-]|$)' '{s=$0; h=gsub(/./,"?",$1); t=gsub(/./,"?",$2); print $1 substr(s,h+1, length(s)-h-t) $2}' > tmp.fa && mv tmp.fa ${out_dir}/${marker}_genetree_aln.fasta
 
-        fi
+	fi
 
 done
