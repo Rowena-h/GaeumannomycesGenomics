@@ -106,7 +106,9 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 1. `sbatch 001_genespace.sh` formats protein and gff3 files and submits `genespace.R` to infer synteny between strains using [GENESPACE](https://github.com/jtlovell/GENESPACE).
 2. `sbatch 002_gc.sh` calculates GC content in 100,000 bp windows across each genome using [bedtools](https://github.com/arq5x/bedtools2).
 3. `sbatch -a 1-9 003_RIP.sh` calculates the composite RIP index (CRI) across each genomes using [this perl script](https://github.com/hyphaltip/fungaltools/tree/master/scripts).
-4. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
+4. `sbatch -a 1-9 004_agp_prep.sh` prepares preliminary AGP files to inform the arrangement of contigs into chromosomes.
+5. `sbatch -a 1-9 005_agptools.sh` creates new gapped fasta files ready for NCBI submission from manually curated AGP files.
+6. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
 
 ## 7 Comparative genomics
 
