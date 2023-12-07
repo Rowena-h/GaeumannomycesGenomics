@@ -1,4 +1,4 @@
-# GaeumannomycesGenomics
+# Gaeumannomyces Genomics
 
 ![Workflow schematic](schematic.png)
 
