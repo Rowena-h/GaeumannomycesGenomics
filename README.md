@@ -7,6 +7,8 @@ Bioinformatics workflow for:
 
 The pipeline was written for and run on Norwich BioScience Institutes' HPC cluster which uses the SLURM batch-queue system. This means that many of the bash scripts (`.sh` file endings) specify core allocation, run times and memory usage allocation that may need to be adapted for different platforms.
 
+Associated data files: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10277622.svg)](https://doi.org/10.5281/zenodo.10277622)
+
 ---
 
 ## 1 *De novo* genome assembly
