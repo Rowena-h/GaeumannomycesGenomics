@@ -1,15 +1,24 @@
-library(ape)
 library(tidyverse)
-library(ggtree)
+library(ape)
 library(aplot)
 library(ggplotify)
+library(ggtree)
 library(patchwork)
 library(scales)
 
-## gdo tree ##
+
+#Directory paths
+dir.func <- "R:/GaeumannomycesGenomics/03_functional_annotation/"
+dir.genephylo <- "R:/GaeumannomycesGenomics/04_phylogenetic_classification/"
+dir.phylo <- "R:/GaeumannomycesGenomics/05_phylogenomics/"
+
+
+################################################################################
+################################## gdo TREE ####################################
+################################################################################
 
 #Read in tree
-gdo.tree <- read.tree("R://GaeumannomycesGenomics/04_phylogenetic_classification/raxmlng/gaeumannomyces_gdo.raxml.support")
+gdo.tree <- read.tree(paste0(dir.genephylo, "raxmlng/gaeumannomyces_gdo.raxml.support"))
 #Root
 gdo.tree <- root(gdo.tree,
                  c("Gaeumannomyces_graminis_var._tritici_haplotype_17", "Gt-3aA1", "Gt-CB1"),
@@ -19,7 +28,7 @@ gdo.shortened.edge <- gdo.tree$edge[which.max(gdo.tree$edge.length), 2]
 gdo.tree$edge.length[which.max(gdo.tree$edge.length)] <- gdo.tree$edge.length[which.max(gdo.tree$edge.length)] / 3
 
 #Get metadata
-markers.metadata <- read.csv("R://GaeumannomycesGenomics/04_phylogenetic_classification/raxmlng/metadata.csv")
+markers.metadata <- read.csv(paste0(dir.genephylo, "raxmlng/metadata.csv"))
 #Format tip labels
 markers.metadata$new.label <- ifelse(
   markers.metadata$own == "Y",
@@ -77,10 +86,12 @@ gg.gdo.tree <- gg.gdo.tree +
                 offset.text=0.001)
 
 
-## ITS2 tree ##
+################################################################################
+################################# ITS2 TREE ####################################
+################################################################################
 
 #Read in tree
-its2.tree <- read.tree("R://GaeumannomycesGenomics/04_phylogenetic_classification/raxmlng/gaeumannomyces_ITS2.raxml.support")
+its2.tree <- read.tree(paste0(dir.genephylo, "raxmlng/gaeumannomyces_ITS2.raxml.support"))
 #Root
 its2.tree <- root(its2.tree,
                   c("Gaeumannomyces_avenae", "Gt-3aA1", "Gt-CB1"),
@@ -125,10 +136,12 @@ gg.its2.tree <- gg.its2.tree +
            size=3)
 
 
-## SPECIES TREE
+################################################################################
+############################### SPECIES TREE ###################################
+################################################################################
 
 #Read in tree
-species.tree <- read.tree(paste0("R://GaeumannomycesGenomics/05_phylogenomics/raxmlng/gaeumannomyces_concat.raxml.support"))
+species.tree <- read.tree(paste0(dir.phylo, "raxmlng/gaeumannomyces_concat.raxml.support"))
 
 #Root tree
 species.tree <- root(species.tree, "GCA_000193285.1_Mag_poae_ATCC_64411_V1_protein.faa",
@@ -136,10 +149,11 @@ species.tree <- root(species.tree, "GCA_000193285.1_Mag_poae_ATCC_64411_V1_prote
 
 #Truncate excessively long branch
 shortened.edge <- species.tree$edge[which.max(species.tree$edge.length), 2]
-species.tree$edge.length[which.max(species.tree$edge.length)] <- species.tree$edge.length[which.max(species.tree$edge.length)] / 3
+species.tree$edge.length[which.max(species.tree$edge.length)] <-
+  species.tree$edge.length[which.max(species.tree$edge.length)] / 3
 
 #Read in tree metadata
-metadata <- read.csv(paste0("R://GaeumannomycesGenomics/05_phylogenomics/raxmlng/metadata.csv"))
+metadata <- read.csv(paste0(dir.phylo, "raxmlng/metadata.csv"))
 #Format tip labels
 metadata$new.label <- ifelse(
   metadata$own == "Y",
@@ -168,7 +182,8 @@ for (i in 1:length(types.df$type)) {
 }
 
 #Make dataframe of clade nodes
-clades.df <- data.frame(clade=unique(metadata$clade[which(metadata$clade != "outgroup")]),
+clades.df <- 
+  data.frame(clade=unique(metadata$clade[which(metadata$clade != "outgroup")]),
                         node=NA)
 
 #Find the most recent common ancestor for each clade
@@ -231,18 +246,19 @@ coord_cartesian(clip="off") +
         legend.margin=margin(0, 0, 0, 0))
 
 #Write to file
-#pdf(file=paste0("R://GaeumannomycesGenomics/05_phylogenomics/trees-", Sys.Date(), ".pdf"),
-#    height=7, width=7)
+pdf(file=paste0(dir.phylo, "trees-", Sys.Date(), ".pdf"), height=7, width=7)
 wrap_elements(gg.gdo.tree + gg.its2.tree + 
                   plot_annotation(title="a") &
                   theme(plot.title=element_text(face="bold"))) /
   wrap_elements(gg.species.tree + 
                   plot_annotation(title="b") &
                   theme(plot.title=element_text(face="bold")))
-#dev.off()
+dev.off()
 
 
-## R3-111-a comparison ##
+################################################################################
+###########################  R3-111-a comparison ###############################
+################################################################################
 
 #Plot bargraph of number of genes
 gg.gene.numbers <- ggplot(metadata, aes(y=tip, x=genes)) +
@@ -266,7 +282,8 @@ gg.gene.numbers <- ggplot(metadata, aes(y=tip, x=genes)) +
         panel.grid.major.y=element_blank())
 
 #Read in N50 stats
-assembly.stats <- read.csv("S:/013_quast/gaeumannomyces_final_quast_results/transposed_report.tsv", sep="\t") %>%
+assembly.stats <- 
+  read.csv("S:/013_quast/gaeumannomyces_final_quast_results/transposed_report.tsv", sep="\t") %>%
   add_row(Assembly="R3-111a-1", N50=48943) %>%
   mutate(new.strain=metadata$new.strain[match(Assembly, metadata$strain)],
          tip=metadata$tip[match(new.strain, metadata$new.strain)])
@@ -294,7 +311,7 @@ gg.N50 <- ggplot(assembly.stats, aes(y=tip, x=N50)) +
         panel.grid.major.y=element_blank())
 
 #Read in number of functionally annotated genes
-df.ahrd.annotated <- read.csv("R:/GaeumannomycesGenomics/03_functional_annotation/ahrd_comparison.tsv", sep="\t") %>%
+df.ahrd.annotated <- read.csv(paste0(dir.func, "ahrd_comparison.tsv"), sep="\t") %>%
   mutate(new.strain=c("Gh-1B17", "Gh-2C17", "Gt-LH10", "Gt-19d1", "Gt-23d",
                       "Ga-3aA1", "Gt-4e", "Gt-8d", "Ga-CB1", "R3-111a-1"),
          tip=metadata$tip[match(new.strain, metadata$new.strain)],
@@ -321,7 +338,8 @@ gg.annotation.proportion <- ggplot(df.ahrd.annotated, aes(x=proportion.primary, 
         panel.grid.major.y=element_blank())
 
 #Read in OrthoFinder unassigned genes
-df.orthofinder.unassigned <- read.csv("S:/orthofinder/gaeumannomyces/Results_Apr28/Orthogroups/Orthogroups_UnassignedGenes.tsv", sep="\t") %>%
+df.orthofinder.unassigned <- 
+  read.csv("S:/orthofinder/gaeumannomyces/Results_Apr28/Orthogroups/Orthogroups_UnassignedGenes.tsv", sep="\t") %>%
   select(-c("Orthogroup", "GCA_000193285.1_Mag_poae_ATCC_64411_V1_protein")) %>%
   gather(strain, unassigned.genes) %>%
   filter(unassigned.genes != "") %>%
@@ -391,13 +409,10 @@ gg.species.tree.comp <- ggtree(species.tree, linetype=NA, branch.length="none") 
                  show.legend=FALSE)
 
 #Write to file
-#pdf(paste0("R://GaeumannomycesGenomics/05_phylogenomics/annotation_comp-", Sys.Date(), ".pdf"), width=8, height=4)
-
+pdf(paste0(dir.phylo, "annotation_comp-", Sys.Date(), ".pdf"), width=8, height=4)
 gg.gene.numbers %>% 
   insert_left(gg.species.tree.comp, width=2.7) %>%
   insert_right(gg.annotation.proportion) %>%
   insert_right(gg.unassigned.genes) %>%
   insert_right(gg.N50)
-
-#dev.off()
-
+dev.off()

@@ -1,22 +1,32 @@
-library(ape)
 library(tidyverse)
+library(ape)
 library(aplot)
-library(ggtree)
-library(scales)
-library(vegan)
-library(ggpubr)
-library(rstatix)
-library(matrixStats)
 library(eulerr)
 library(ggplotify)
+library(ggpubr)
+library(ggtree)
+library(matrixStats)
+library(rstatix)
+library(scales)
+library(vegan)
 
-## Species tree ##
+
+#Directory paths
+dir.func <- "R:/GaeumannomycesGenomics/03_functional_annotation/"
+dir.phylo <- "R:/GaeumannomycesGenomics/05_phylogenomics/"
+dir.comp <- "R:/GaeumannomycesGenomics/07_comparative_genomics/"
+dir.repeats <- "S:/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/"
+
+
+################################################################################
+################################ SPECIES TREE ##################################
+################################################################################
 
 #Assign outgroup
 outgroups <- c("GCA_000193285.1_Mag_poae_ATCC_64411_V1_protein.faa")
 
 #Read in tree metadata
-metadata <- read.csv(paste0("R:/GaeumannomycesGenomics/05_phylogenomics/raxmlng/metadata.csv"))
+metadata <- read.csv(paste0(dir.phylo, "raxmlng/metadata.csv"))
 #Format tip labels
 metadata$new.label <- ifelse(
   metadata$own == "Y",
@@ -25,7 +35,7 @@ metadata$new.label <- ifelse(
 )
 
 #Read in tree
-tree <- read.tree("R:/GaeumannomycesGenomics/05_phylogenomics/raxmlng/gaeumannomyces_concat.raxml.support")
+tree <- read.tree(paste0(dir.phylo, "raxmlng/gaeumannomyces_concat.raxml.support"))
 
 #Root tree
 tree <- root(tree, outgroups, edgelabel=TRUE, resolve.root=TRUE)
@@ -35,7 +45,8 @@ tree <- drop.tip(tree, "GCF_000145635.1_Gae_graminis_V2_protein.faa_XP")
 
 #Truncate excessively long branch
 shortened.edge <- tree$edge[which.max(tree$edge.length), 2]
-tree$edge.length[which.max(tree$edge.length)] <- tree$edge.length[which.max(tree$edge.length)] / 3
+tree$edge.length[which.max(tree$edge.length)] <- 
+  tree$edge.length[which.max(tree$edge.length)] / 3
 
 #Plot tree
 gg.tree <- ggtree(tree, linetype=NA) %<+% metadata
@@ -110,21 +121,23 @@ gg.tree <- gg.tree +
         legend.margin=margin(0, 0, 0, 0))
 
 
-## Lifestyle gene variance comparison PERMANOVA ##
+################################################################################
+############################# LIFESTYLE PERMANOVA ##############################
+################################################################################
 
 #For all types of genes...
 for (i in c("orthogroup", "CSEP", "CAZyme", "BGC")){
   
   print(i)
   lifestyle.data <- read.csv(
-    paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/lifestyle_permanova/", i, "/data.csv"),
+    paste0(dir.comp, "lifestyle_permanova/", i, "/data.csv"),
     row.names="genome"
   )
   #Make distance matrix of orthogroup content
   dist <- vegdist(lifestyle.data, method="jaccard")
   #Read in lifestyle test results
   phy.pca.result <- read.csv(
-    paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/lifestyle_permanova/", i, "/metadata.csv")
+    paste0(dir.comp, "lifestyle_permanova/", i, "/metadata.csv")
   )
   #Do permanova
   permanova <- adonis2(formula=dist ~ PC1 + PC2 + lifestyle,
@@ -140,9 +153,11 @@ for (i in c("orthogroup", "CSEP", "CAZyme", "BGC")){
 }
 
 
-## Gene content summary ##
+################################################################################
+################################ GENE CONTENT ##################################
+################################################################################
 
-# BGCS #
+## BGCS ##
 
 #Read in BiG-SCAPE results
 bgc.dir <- "S:/functional_annotation/002.5_big-scape/gaeumannomyces/"
@@ -207,10 +222,10 @@ for (i in 1:length(colnames(bgc.abundance.mat.gt))) {
 }
 
 
-# CSEPs/CAZymes #
+## CSEPs/CAZymes ##
 
 #Read in orthogroup data
-load("R:/GaeumannomycesGenomics/07_comparative_genomics/orthogroup-matrices-2023-07-25.RData")
+load(paste0(dir.comp, "orthogroup-matrices-2023-07-25.RData"))
 
 #Filter for only Gt strains
 orthogroups.count.gt <- orthogroups.count %>%
@@ -747,13 +762,11 @@ gene.content.grob <- as.grob(
 )
 
 #Write to file
-# pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/gaeumannomyces_genes-",
-#                 Sys.Date(), ".pdf"),
-#     height=6, width=7)
+pdf(file=paste0(dir.comp, "gaeumannomyces_genes-", Sys.Date(), ".pdf"), height=6, width=7)
 ggarrange(gene.content.grob,
           ggarrange(gg.accumulation, gg.euler, labels=c("", "c")),
           nrow=2, heights=c(2, 1), labels="auto")
-# dev.off()
+dev.off()
 
 
 ## Abundance matrix plots ##
@@ -801,7 +814,7 @@ gg.skeleton.tree <- gg.skeleton.tree +
 # CSEPs #
 
 #Read in PHI-base data
-phibase.df <- read.csv("R:/GaeumannomycesGenomics/03_functional_annotation/phi-base_current.csv")
+phibase.df <- read.csv(paste0(dir.func, "phi-base_current.csv"))
 
 #Summarise number of CSEPs with PHI-base names 
 CSEP.abundance.df <- CSEP.count %>%
@@ -810,8 +823,8 @@ CSEP.abundance.df <- CSEP.count %>%
   gather(strain, num, -orthogroup) %>%
   mutate(PHI.base_entry=sub(
     "_.*", "",orthogroups.stats$PHI.base_entry[match(orthogroup, orthogroups.stats$orthogroup)]),
-         CSEP_name=orthogroups.stats$CSEP_name[match(orthogroup, orthogroups.stats$orthogroup)],
-         name_label=paste0(sub("N0\\.", "", orthogroup), "\n", CSEP_name)) %>%
+    CSEP_name=orthogroups.stats$CSEP_name[match(orthogroup, orthogroups.stats$orthogroup)],
+    name_label=paste0(sub("N0\\.", "", orthogroup), "\n", CSEP_name)) %>%
   filter(num > 0, !is.na(PHI.base_entry)) %>%
   mutate(phenotype=NA)
 
@@ -844,7 +857,7 @@ phibase.df[which(
   phibase.df$PHI_MolConn_ID %in% 
     unlist(str_split(unique(na.omit(orthogroups.stats$PHI.base_entry)), ",|_"))),
   c("PHI_MolConn_ID", "Gene_name", "Pathogen_species", "Experimental_host_species",
-       "Phenotype_of_mutant", "experimental_evidence", "Comments")]
+    "Phenotype_of_mutant", "experimental_evidence", "Comments")]
 
 #Plot grid of CSEPs
 gg.cseps <- ggplot(CSEP.abundance.df,
@@ -896,7 +909,7 @@ CAZyme.abundance.df <- CAZyme.count %>%
   mutate(substrate=NA)
 
 #Get substrate groupings
-substrates.df <- read.csv("R:/GaeumannomycesGenomics/07_comparative_genomics/cazyme_substrates.csv")
+substrates.df <- read.csv(paste0(dir.comp, "cazyme_substrates.csv"))
 
 #Add substrates to dataframe
 for (i in 1:length(unique(substrates.df$CAZy.Family))) {
@@ -1009,35 +1022,33 @@ gg.bgcs <- ggplot(bgc.abundance.df,
 
 
 #Write to file
-pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/abundances-1-", Sys.Date(), ".pdf"),
-    height=4.2, width=7)
+pdf(file=paste0(dir.comp, "abundances-1-", Sys.Date(), ".pdf"), height=4.2, width=7)
 ggarrange(as.grob(gg.cazymes %>% insert_left(gg.skeleton.tree, width=0.27)),
           as.grob(gg.cseps %>% insert_left(gg.skeleton.tree, width=0.27)),
           labels="auto", nrow=2, heights=c(1, 1.1))
 dev.off()
 
-pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/abundances-2-", Sys.Date(), ".pdf"),
-    height=1.8, width=7)
+pdf(file=paste0(dir.comp, "abundances-2-", Sys.Date(), ".pdf"), height=1.8, width=7)
 ggarrange(as.grob(gg.bgcs %>% insert_left(gg.skeleton.tree, width=0.27)),
           labels="c", nrow=1)
 dev.off()
 
 
-## Repeat classification ##
+################################################################################
+############################### REPEAT CONTENT #################################
+################################################################################
 
 #Read in eirepeat results
-repeats.dir <- "S:/CB-GENANNO-520_Mark_McMullan_Wheat_Take-all/Analysis/"
-
 for (strain in metadata$strain[metadata$own == "Y"]) {
   
   repeats <- rbind(
-    read.table(paste0(repeats.dir, strain, "/Analysis/eirepeat-1.1.0/output/RepeatMasker_interspersed_repeatmodeler/genome.fa.out"),
+    read.table(paste0(dir.repeats, strain, "/Analysis/eirepeat-1.1.0/output/RepeatMasker_interspersed_repeatmodeler/genome.fa.out"),
                skip=3, header=FALSE, fill=TRUE,
                col.names=c("sw.score", "perc.div", "perc.del", "perc.ins", "sequence",
                            "sequence.begin", "sequence.end", "sequence.left", "C",
                            "matching.repeat", "repeatclass.family", "repeat.begin",
                            "repeat.end", "repeat.left", "id", "asterisk")),
-    read.table(paste0(repeats.dir, strain, "/Analysis/eirepeat-1.1.0/output/RepeatMasker_interspersed/genome.fa.out"),
+    read.table(paste0(dir.repeats, strain, "/Analysis/eirepeat-1.1.0/output/RepeatMasker_interspersed/genome.fa.out"),
                skip=3, header=FALSE, fill=TRUE,
                col.names=c("sw.score", "perc.div", "perc.del", "perc.ins", "sequence",
                            "sequence.begin", "sequence.end", "sequence.left", "C",
@@ -1049,7 +1060,7 @@ for (strain in metadata$strain[metadata$own == "Y"]) {
     distinct()
   
   #Summarise number of repeats for each class
-  repeats.gff <- read.table(paste0(repeats.dir, strain, "/Analysis/eirepeat-1.1.0/output/all_interspersed_repeats.gff3")) %>%
+  repeats.gff <- read.table(paste0(dir.repeats, strain, "/Analysis/eirepeat-1.1.0/output/all_interspersed_repeats.gff3")) %>%
     filter(V3 == "match") %>%
     mutate(motif=sub("^.*Motif:", "", V9)) %>%
     mutate(repeatclass.family=repeats.index$repeatclass.family[match(motif, repeats.index$matching.repeat)]) %>%
@@ -1065,6 +1076,7 @@ for (strain in metadata$strain[metadata$own == "Y"]) {
 #Combine repeat annotations for all strains
 repeats.df <- bind_rows(mget(ls(pattern="\\.repeats"))) %>%
   filter(class != "ARTEFACT")
+
 #Add empty row for outgroup
 repeats.df <- bind_rows(repeats.df, data.frame(tip=metadata$tip[metadata$clade == "outgroup"]))
 
@@ -1076,9 +1088,9 @@ gg.repeats <- ggplot(repeats.df, aes(y=tip, x=num, fill=class)) +
                      position="top",
                      labels=addUnits) +
   scale_fill_manual(values=c("#88CCEE", "#44AA99", "#117733", "#332288",
-                                      "#DDCC77", "#999933","#CC6677",
-                                      "#882255", "#AA4499", "dimgrey"),
-                                      labels=sub("_", " ", sort(unique(repeats.df$class)))) +
+                             "#DDCC77", "#999933","#CC6677",
+                             "#882255", "#AA4499", "dimgrey"),
+                    labels=sub("_", " ", sort(unique(repeats.df$class)))) +
   coord_cartesian(clip="off") +
   theme_minimal() +
   theme(strip.placement="outside",
@@ -1097,8 +1109,8 @@ gg.repeats <- ggplot(repeats.df, aes(y=tip, x=num, fill=class)) +
         legend.spacing.x=unit(0.1, "cm"),
         legend.title=element_blank())
 
-#pdf(file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/gaeumannomyces_TEs-",
-#                Sys.Date(), ".pdf"), height=4, width=7)
+#Write to file
+pdf(file=paste0(dir.comp, "gaeumannomyces_TEs-", Sys.Date(), ".pdf"), height=4, width=7)
 gg.repeats %>% 
   insert_left(gg.tree, width=2.7)
-#dev.off()
+dev.off()
