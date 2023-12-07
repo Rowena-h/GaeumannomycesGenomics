@@ -1,8 +1,8 @@
 # GaeumannomycesGenomics
 
-README IN PROGRESS...
-Insert schematic
+![Workflow schematic](schematic.png)
 
+Bioinformatics workflow for:
 > Hill et al. (in prep) ***
 
 The pipeline was written for and run on Norwich BioScience Institutes' HPC cluster which uses the SLURM batch-queue system. This means that many of the bash scripts (`.sh` file endings) specify core allocation, run times and memory usage allocation that may need to be adapted for different platforms.
