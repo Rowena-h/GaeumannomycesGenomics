@@ -1,14 +1,15 @@
-library(tidyverse)
-library(ape)
-library(aplot)
-library(eulerr)
-library(ggplotify)
-library(ggpubr)
-library(ggtree)
-library(matrixStats)
-library(rstatix)
-library(scales)
-library(vegan)
+#Written in R v4.3.1
+library(tidyverse)    #2.0.0
+library(ape)          #5.7-1
+library(aplot)        #0.2.2
+library(eulerr)       #7.0.0
+library(ggplotify)    #0.1.2
+library(ggpubr)       #0.6.0
+library(ggtree)       #3.9.1
+library(matrixStats)  #1.0.0
+library(rstatix)      #0.7.2
+library(scales)       #1.2.1
+library(vegan)        #2.6-4
 
 
 #Directory paths
@@ -1074,7 +1075,10 @@ for (strain in metadata$strain[metadata$own == "Y"]) {
 }
 
 #Combine repeat annotations for all strains
-repeats.df <- bind_rows(mget(ls(pattern="\\.repeats"))) %>%
+repeats.df <- bind_rows(mget(paste0(metadata %>%
+                                      filter(own=="Y") %>%
+                                      pull(strain),
+                                    ".repeats"))) %>%
   filter(class != "ARTEFACT")
 
 #Add empty row for outgroup
@@ -1114,3 +1118,7 @@ pdf(file=paste0(dir.comp, "gaeumannomyces_TEs-", Sys.Date(), ".pdf"), height=4, 
 gg.repeats %>% 
   insert_left(gg.tree, width=2.7)
 dev.off()
+
+################################################################################
+
+save.image(paste0(dir.comp, "plot_gene_content_", Sys.Date(), ".RData"))

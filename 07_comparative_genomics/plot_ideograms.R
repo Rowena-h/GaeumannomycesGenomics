@@ -1,22 +1,23 @@
-library(tidyverse)
-library(ape)
-library(cowplot)
-library(eulerr)
-library(ggforce)
-library(ggh4x)
-library(gggenomes)
-library(ggmsa)
-library(ggnewscale)
-library(ggplotify)
-library(ggpubr)
-library(ggrepel)
-library(ggtree)
-library(multcompView)
-library(regioneR)
-library(rstatix)
-library(rtracklayer)
-library(scales)
-library(seqmagick)
+#Written in R v4.3.1
+library(tidyverse)    #2.0.0
+library(ape)          #5.7-1
+library(cowplot)      #1.1.1
+library(eulerr)       #7.0.0
+library(ggforce)      #0.4.1
+library(ggh4x)        #0.2.6
+library(gggenomes)    #0.9.12.9000
+library(ggmsa)        #1.6.0
+library(ggnewscale)   #0.4.9
+library(ggplotify)    #0.1.2
+library(ggpubr)       #0.6.0
+library(ggrepel)      #0.9.3
+library(ggtree)       #3.9.1
+library(multcompView) #0.1-9
+library(regioneR)     #1.32.0
+library(rstatix)      #0.7.2
+library(rtracklayer)  #1.60.1
+library(scales)       #1.2.1
+library(seqmagick)    #0.1.6
 
 
 #Directory paths
@@ -2720,4 +2721,4 @@ dev.off()
 
 ################################################################################
 
-save.image(paste0(dir.comp, Sys.Date(), ".RData"))
+save.image(paste0(dir.comp, "plot_ideograms_", Sys.Date(), ".RData"))
