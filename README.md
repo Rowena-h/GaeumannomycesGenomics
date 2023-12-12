@@ -60,6 +60,7 @@ Associated data files: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10277
 8. `007_liftover_multi.txt` contains the commands used to perform an all-versus-all comparison of gene models across all strains using [LiftOff](https://github.com/agshumate/Liftoff).
 9. `008_filter_rRNA.txt` contains the commands used to filter the input annotations to the final [MINOS](https://github.com/EI-CoreBioinformatics/minos) step to avoid scoring rRNA as possible protein coding genes.
 10. `009_rerun_minos.txt` contains the commands used to perform a final minos including the liftover annotation of the all vs. all comparsion of all the previous strain annotations generated in the step 5.
+11. `sbatch -a 1-9 010_mitohifi.sh` identifies mitochondrial contigs and annotates mitochondrial genes.
 
 ## 3 Functional annotation
 
