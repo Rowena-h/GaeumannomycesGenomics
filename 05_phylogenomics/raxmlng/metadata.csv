@@ -1,0 +1,12 @@
+tip,name,strain,new.strain,clade,cluster,type,own,genes,silthiofam,lifestyle
+Gt14LH10_EIv1,G. tritici,Gt14LH10,Gt-LH10,GtB,II,B,Y,12934,insensitive,pathogen
+Gt-19d1_EIv1,G. tritici,Gt-19d1,Gt-19d1,GtA,I,A,Y,11668,insensitive,pathogen
+Gt-23d_EIv1,G. tritici,Gt-23d,Gt-23d,GtB,II,B,Y,13102,sensitive,pathogen
+Gt-3aA1_EIv1,G. avenae,Gt-3aA1,Ga-3aA1,Ga,,,Y,11804,NA,pathogen
+Gt-CB1_EIv1,G. avenae,Gt-CB1,Ga-CB1,Ga,,,Y,11840,NA,pathogen
+Gt-4e_EIv1,G. tritici,Gt-4e,Gt-4e,GtB,II,B,Y,13010,sensitive,pathogen
+Gt-8d_EIv1,G. tritici,Gt-8d,Gt-8d,GtA,I,A,Y,11790,sensitive,pathogen
+Gh-1B17_EIv1,G. hyphopodiodes,Gh-1B17,Gh-1B17,Gh,,,Y,13439,NA,nonpathogen
+Gh-2C17_EIv1,G. hyphopodiodes,Gh-2C17,Gh-2C17,Gh,,,Y,12674,NA,nonpathogen
+GCA_000193285.1_Mag_poae_ATCC_64411_V1_protein.faa,Magnaporthiopsis poae,ATCC 64411,ATCC 64411,outgroup,,,,12329,NA,NA
+GCF_000145635.1_Gae_graminis_V2_protein.faa_XP,G. tritici,R3-111a-1,R3-111a-1,GtA,I,A,,14650,NA,NA
