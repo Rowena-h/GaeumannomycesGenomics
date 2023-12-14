@@ -26,7 +26,7 @@ do
 			--parse \
 	        	--msa ${aln} \
 			--model ${model} \
-	        	--prefix raxmlng/test/gaeumannomyces_${marker}
+	        	--prefix raxmlng/gaeumannomyces_${marker}
 
 		if [[ ${marker} = ITS2 ]]
 		then
@@ -40,7 +40,7 @@ do
 			--all \
 			--msa ${msa} \
 			--model ${model} \
-			--prefix raxmlng/test/gaeumannomyces_${marker} \
+			--prefix raxmlng/gaeumannomyces_${marker} \
 			--seed 2 \
 			--threads auto{${SLURM_CPUS_PER_TASK}} \
 			--bs-trees autoMRE{1000}			
@@ -48,8 +48,8 @@ do
 		#Check convergence
 		singularity exec ~/programmes/raxml-ng/raxml-ng-1.1.0.img raxml-ng \
 			--bsconverge \
-		        --bs-trees raxmlng/test/gaeumannomyces_${marker}.raxml.bootstraps \
-		        --prefix raxmlng/test/gaeumannomyces_${marker}_convergence_test \
+		        --bs-trees raxmlng/gaeumannomyces_${marker}.raxml.bootstraps \
+		        --prefix raxmlng/gaeumannomyces_${marker}_convergence_test \
 		        --seed 2
 	fi
 
