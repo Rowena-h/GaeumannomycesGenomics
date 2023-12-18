@@ -27,6 +27,56 @@ dir.synteny <- "R:/GaeumannomycesGenomics/06_synteny/"
 dir.comp <- "R:/GaeumannomycesGenomics/07_comparative_genomics/"
 
 
+#Create functions to fix ordering of clades and strains in plots
+plot_orders <- function(df) {
+  df %>%
+    mutate(clade=factor(metadata$clade[match(new.strain, metadata$new.strain)],
+                        levels=c("GtB", "GtA", "Ga", "Gh")),
+           clade.label=recode_factor(clade,
+                                     "GtB"='paste(italic("Gt"), "B")',
+                                     "GtA"='paste(italic("Gt"), "A")',
+                                     "Ga"='paste(italic("Ga"))',
+                                     "Gh"='paste(italic("Gh"))'),
+           new.strain=factor(new.strain,
+                             levels=c("Gt-LH10", "Gt-4e", "Gt-23d", "Gt-8d", "Gt-19d1",
+                                      "Ga-3aA1", "Ga-CB1", "Gh-2C17", "Gh-1B17")),
+           new.strain.label=recode_factor(new.strain,
+                                          "Gt-LH10"='paste("Gt-LH10")',
+                                          "Gt-4e"='paste("Gt-4e")',
+                                          "Gt-23d"='paste("Gt-23d")',
+                                          "Gt-8d"='paste("Gt-8d")',
+                                          "Gt-19d1"='paste("Gt-19d1")',
+                                          "Ga-3aA1"='paste("Ga-3aA1")',
+                                          "Ga-CB1"='paste("Ga-CB1")',
+                                          "Gh-2C17"='paste("Gh-2C17")',
+                                          "Gh-1B17"='paste("Gh-1B17")'))
+}
+
+plot_orders_rev <- function(df) {
+  df %>%
+    mutate(clade=factor(metadata$clade[match(new.strain, metadata$new.strain)],
+                        levels=c("Gh", "Ga", "GtA", "GtB")),
+           clade.label=recode_factor(clade,
+                                     "Gh"='paste(italic("Gh"))',
+                                     "Ga"='paste(italic("Ga"))',
+                                     "GtA"='paste(italic("Gt"), "A")',
+                                     "GtB"='paste(italic("Gt"), "B")'),
+           new.strain=factor(new.strain,
+                             levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
+                                      "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10")),
+           new.strain.label=recode_factor(new.strain,
+                                          "Gh-1B17"='paste("Gh-1B17")',
+                                          "Gh-2C17"='paste("Gh-2C17")',
+                                          "Ga-CB1"='paste("Ga-CB1")',
+                                          "Ga-3aA1"='paste("Ga-3aA1")',
+                                          "Gt-19d1"='paste("Gt-19d1")',
+                                          "Gt-8d"='paste("Gt-8d")',
+                                          "Gt-23d"='paste("Gt-23d")',
+                                          "Gt-4e"='paste("Gt-4e")',
+                                          "Gt-LH10"='paste("Gt-LH10")'))
+}
+
+
 #Make list with strains and filenames
 strains <- list(strain=c("Gt-19d1", "Gt-8d", "Gt-23d", "Gt14LH10", "Gt-4e",
                          "Gt-CB1", "Gt-3aA1", "Gh-2C17", "Gh-1B17"),
@@ -184,21 +234,15 @@ for (strain in colnames(orthogroups)) {
 df.duplicates.stats <- bind_rows(duplicates.stats) %>%
   filter(duplicate != "tandem") %>%
   mutate(duplicate=sub("mixed", "inter-chromosomal", duplicate),
-         new.strain=metadata$new.strain[match(strain, metadata$strain)],
-         new.strain=factor(new.strain, levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1",
-                                                "Gt-19d1", "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10")),
-         clade=metadata$clade[match(strain, metadata$strain)],
-         clade=factor(clade, levels=c("Gh", "Ga", "GtA", "GtB")),
-         clade=recode_factor(clade,
-                             "Gh"='paste(italic("Gh"))',
-                             "Ga"='paste(italic("Ga"))',
-                             "GtA"='paste(italic("Gt"), "A")',
-                             "GtB"='paste(italic("Gt"), "B")'))
+         new.strain=metadata$new.strain[match(strain, metadata$strain)])
+
+#Set plot order
+df.duplicates.stats <- plot_orders_rev(df.duplicates.stats)
 
 #Plot boxplots of duplicate set size
 gg.duplicates <- ggplot(df.duplicates.stats,
                         aes(x=new.strain, y=num, colour=duplicate)) +
-  facet_grid(~clade, scales="free_x", space="free", switch="x",
+  facet_grid(~clade.label, scales="free_x", space="free", switch="x",
              labeller=label_parsed) +
   geom_boxplot(width=0.3,
                linewidth=0.3,
@@ -950,86 +994,39 @@ for (i in 1:length(strains$strain)) {
 ############################# COMBINE ALL RESULTS ##############################
 
 all.fragments <- do.call("rbind", mget(ls(pattern="df.fragments.cumulative.")))
-all.fragments$new.strain <- 
-  factor(all.fragments$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
-all.fragments$colour <- 
-  factor(all.fragments$colour,
-         levels=c("pseu_chr1", "pseu_chr2", "pseu_chr3", "pseu_chr4",
-                  "pseu_chr5", "pseu_chr6", "mixed"))
-
+all.fragments <- plot_orders(all.fragments) %>%
+  mutate(colour=factor(colour,
+                       levels=c("pseu_chr1", "pseu_chr2", "pseu_chr3", "pseu_chr4",
+                                "pseu_chr5", "pseu_chr6", "mixed")))
+  
 all.gc <- do.call("rbind", mget(ls(pattern="df.gc.cumulative.")))
-all.gc$new.strain <- 
-  factor(all.gc$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+all.gc <- plot_orders(all.gc)
 
 all.rip <- do.call("rbind", mget(ls(pattern="df.rip.cumulative.")))
-all.rip$new.strain <- 
-  factor(all.rip$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
 
 all.te.density <- do.call("rbind", mget(ls(pattern="df.te.density.cumulative.")))
-all.te.density$new.strain <- 
-  factor(all.te.density$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+all.te.density <- plot_orders(all.te.density)
 
 all.starships <- do.call("rbind", mget(ls(pattern="df.starships.cumulative.")))
-all.starships$new.strain <- 
-  factor(all.starships$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+all.starships <- plot_orders_rev(all.starships)
 
 all.CSEPs <- do.call("rbind", mget(ls(pattern="df.CSEPs.cumulative.")))
-all.CSEPs$new.strain <- 
-  factor(all.CSEPs$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+all.CSEPs <- plot_orders(all.CSEPs)
 
 all.CSEP.density <- do.call("rbind", mget(ls(pattern="df.CSEP.density.cumulative.")))
-all.CSEP.density$new.strain <- 
-  factor(all.CSEP.density$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
 
 all.genes <- do.call("rbind", mget(ls(pattern="df.genes.cumulative.")))
-all.genes$new.strain <- 
-  factor(all.genes$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+all.genes <- plot_orders(all.genes)
 
 all.gene.density <- do.call("rbind", mget(ls(pattern="df.gene.density.cumulative.")))
-all.gene.density$new.strain <- 
-  factor(all.gene.density$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+all.gene.density <- plot_orders(all.gene.density)
 
 all.genes.tes <- do.call("rbind", mget(ls(pattern="df.genes.tes.cumulative.")))
-all.genes.tes$new.strain <- 
-  factor(all.genes.tes$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
-
-all.tandems <- do.call("rbind", mget(ls(pattern="df.tandems.cumulative.")))
-all.tandems$new.strain <- 
-  factor(all.tandems$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
 
 all.hcn <- do.call("rbind", mget(ls(pattern="df.hcn.cumulative.")))
-all.hcn$new.strain <- 
-  factor(all.hcn$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+all.hcn <- plot_orders(all.hcn)
 
 all.isoforms <- do.call("rbind", mget(ls(pattern="df.isoforms.")))
-all.isoforms$new.strain <- 
-  factor(all.isoforms$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
 
 
 ################# IDEOGRAM - GC content, gene and TE density  ##################
@@ -1055,81 +1052,83 @@ centromere.df <- data.frame(
         4400001, 10486465, 21059109,  44892291,
         4400001, 10586456, 25889490, 49648259))
 
-centromere.df$new.strain <- 
-  factor(centromere.df$new.strain,
-         levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
-                  "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+#Set plot order
+centromere.df <- plot_orders(centromere.df)
 
 #Plot ideograms with GC content, gene and TE density
-gg.ideogram <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
-  geom_rect(aes(xmin=start2-200000, xmax=end2+200000, fill=as.factor(colour)),
-            ymin=as.numeric(all.fragments$new.strain)-0.2,
-            ymax=as.numeric(all.fragments$new.strain)+0.2,
+gg.ideogram <- ggplot(all.fragments, aes(x=end2)) +
+  facet_nested(clade.label+new.strain.label~.,
+               space="free", switch="y", scales="free_y",
+             labeller=label_parsed,
+             nest_line=element_line(),
+             strip=strip_nested(size="variable")) +
+  geom_rect(aes(xmin=start2-200000, xmax=end2+200000,
+                ymin=as.numeric(new.strain.label)-0.2,
+                ymax=as.numeric(new.strain.label)+0.2,
+                fill=as.factor(colour)),
             colour=NA) +
   geom_segment(data=all.gc,
-               aes(x=plot.xmax, xend=plot.xmax, colour=gc),
-               y=as.numeric(all.gc$new.strain)+0.05,
-               yend=as.numeric(all.gc$new.strain)+0.15,
+               aes(x=plot.xmax, xend=plot.xmax,
+                   y=as.numeric(new.strain.label)+0.05,
+                   yend=as.numeric(new.strain.label)+0.15,
+                   colour=gc),
                inherit.aes=FALSE) +
   scale_colour_gradient(name="GC content",
                         limits=c(0, 1),
                         low="black", high="white", na.value="transparent") +
   new_scale_colour() +
   geom_segment(data=all.gene.density,
-               aes(x=max, xend=max, colour=num),
-               y=as.numeric(all.gene.density$new.strain)-0.05,
-               yend=as.numeric(all.gene.density$new.strain)+0.05,
+               aes(x=max, xend=max, 
+                   y=as.numeric(new.strain.label)-0.05,
+                   yend=as.numeric(new.strain.label)+0.05,
+                   colour=num),
                inherit.aes=FALSE) +
   scale_colour_gradient(name="Gene density",
                         low="white", high="black", na.value="transparent") +
   new_scale_colour() +
   geom_segment(data=all.te.density,
-               aes(x=max, xend=max, colour=num),
-               y=as.numeric(all.te.density$new.strain)-0.15,
-               yend=as.numeric(all.te.density$new.strain)-0.05,
+               aes(x=max, xend=max,
+                   y=as.numeric(new.strain.label)-0.15,
+                   yend=as.numeric(new.strain.label)-0.05,
+                   colour=num),
                inherit.aes=FALSE) +
   scale_colour_gradient(name="TE density",
                         low="white", high="black", na.value="transparent") +
   geom_rect(data=centromere.df,
-            aes(ymin=as.numeric(new.strain)+0.25, ymax=as.numeric(new.strain)-0.25,
+            aes(ymin=as.numeric(new.strain.label)+0.25,
+                ymax=as.numeric(new.strain.label)-0.25,
                 xmin=pos-400000, xmax=pos+400000),
             linetype="22",
             colour="black",
             fill=NA,
             linewidth=0.3,
             inherit.aes=FALSE) +
-  annotate(geom="segment",
-           x=48500000, xend=50500000,
-           y=8.1, yend=8.8,
-           linewidth=0.2) +
-  annotate(geom="segment",
-           x=48500000, xend=50500000,
-           y=8, yend=7.6,
-           linewidth=0.2) +
-  annotate(geom="segment",
-           x=48500000, xend=50500000,
-           y=7.9, yend=6.4,
-           linewidth=0.2) +
   scale_fill_manual(name="Syntenic block",
-                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", "#44BB99", "#77AADD", "dimgrey")) +
+                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33",
+                             "#44BB99", "#77AADD", "dimgrey")) +
   scale_x_continuous(labels=label_number(accuracy=1,
                                          scale=1e-6,
                                          suffix="Mbp"),
                      expand=c(0, 100)) +
+  scale_y_continuous(breaks=seq(1, length((levels(all.fragments$new.strain.label)))),
+                     labels=levels(all.fragments$new.strain.label)) +
   theme(legend.position=c(0.96, 0.65),
         legend.direction="vertical",
         legend.text=element_text(size=5),
         legend.title=element_text(face="bold", size=6),
         legend.key.size=unit(0.2, "cm"),
         legend.margin=margin(0, 0, 0, 0, unit="pt"),
-        axis.text.x=element_blank(),
-        axis.text.y=element_text(size=8),
+        strip.background=element_blank(),
+        strip.text.y.left=element_text(size=6, face="bold", angle=0),
+        strip.clip="off",
+        panel.spacing=unit(1, "lines"),
+        axis.text=element_blank(),
         axis.ticks=element_blank(),
         axis.title=element_blank(),
-        #plot.margin=margin(t=20),
         panel.grid.major=element_blank(), 
         panel.grid.minor=element_blank(), 
-        panel.background=element_blank())
+        panel.background=element_blank()) +
+  ggpreview(width=7, height=5)
 
 #Write to file
 pdf(paste0(dir.comp, "ideogram-", Sys.Date(), ".pdf"), width=7, height=5)
@@ -1140,37 +1139,49 @@ dev.off()
 ################## IDEOGRAM - TE density and CSEP locations  ###################
 
 #Plot TE density and CSEP locations
-gg.te <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
-  geom_rect(aes(xmin=start2-200000, xmax=end2+200000, fill=as.factor(colour)),
-            ymin=as.numeric(all.fragments$new.strain)-0.2,
-            ymax=as.numeric(all.fragments$new.strain)+0.2,
+gg.te <- ggplot(all.fragments, aes(x=end2)) +
+  facet_nested(clade.label+new.strain.label~.,
+               space="free", switch="y", scales="free_y",
+               labeller=label_parsed,
+               nest_line=element_line(),
+               strip=strip_nested(size="variable")) +
+  geom_rect(aes(xmin=start2-200000, xmax=end2+200000,
+                ymin=as.numeric(new.strain.label)-0.2,
+                ymax=as.numeric(new.strain.label)+0.2,
+                fill=as.factor(colour)),
             colour=NA) +
   geom_segment(data=all.te.density,
-               aes(x=max, xend=max, colour=num),
-               y=as.numeric(all.te.density$new.strain)-0.14,
-               yend=as.numeric(all.te.density$new.strain)+0.14,
+               aes(x=max, xend=max,
+                   y=as.numeric(new.strain.label)-0.14,
+                   yend=as.numeric(new.strain.label)+0.14,
+                   colour=num),
                inherit.aes=FALSE) +
   geom_rect(data=all.CSEPs,
-            aes(xmin=plot.xmin, xmax=plot.xmax),
+            aes(xmin=plot.xmin, xmax=plot.xmax,
+                ymin=as.numeric(new.strain.label)+0.2,
+                ymax=as.numeric(new.strain.label)+0.3),
             linewidth=0.05,
             fill="grey",
-            colour="black",
-            ymin=as.numeric(all.CSEPs$new.strain)+0.2,
-            ymax=as.numeric(all.CSEPs$new.strain)+0.3) +
-  annotate(geom="text",
-           label="CSEPs",
-           x=54000000, y=2,
-           size=2,
-           fontface="bold") +
-  annotate(geom="segment",
-           x=52000000, xend=52800000,
-           y=1.34, yend=1.75,
-           linewidth=0.1) +
+            colour="black") +
+  geom_text(data=all.fragments %>% 
+              filter(strain == "Gh-2C17") %>%
+              slice_head(n=1),
+            aes(x=54000000, y=as.numeric(new.strain.label)+0.2),
+            label="CSEPs",
+            fontface="bold",
+            size=2) +
+  geom_segment(data=all.fragments %>% 
+                 filter(strain == "Gh-2C17") %>%
+                 slice_head(n=1),
+               aes(x=51000000, xend=52600000,
+                   y=as.numeric(new.strain.label)+0.25,
+                   yend=as.numeric(new.strain.label)+0.2),
+               linewidth=0.1) +
   scale_colour_gradient(name="TE density",
-                        #limits=c(0, 1),
                         low="white", high="black", na.value="transparent") +
   scale_fill_manual(name="Syntenic block",
-                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", "#44BB99", "#77AADD", "dimgrey")) +
+                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", 
+                             "#44BB99", "#77AADD", "dimgrey")) +
   guides(colour=guide_colourbar(title.position="top",
                                 title.theme=element_text(face="bold", size=6)),
          fill=guide_legend(title.position="top",
@@ -1185,38 +1196,48 @@ gg.te <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
         legend.text=element_text(size=5),
         legend.key.size=unit(0.2, "cm"),
         legend.margin=margin(0, 0, 0, 0, unit="pt"),
-        axis.text.x=element_blank(),
-        axis.text.y=element_text(size=8),
+        strip.background=element_blank(),
+        strip.text.y.left=element_text(size=6, face="bold", angle=0),
+        strip.clip="off",
+        axis.text=element_blank(),
         axis.ticks=element_blank(),
         axis.title=element_blank(),
         plot.margin=margin(5.5, 5.5, 5.5, 20),
         panel.grid.major=element_blank(), 
         panel.grid.minor=element_blank(), 
-        panel.background=element_blank())
+        panel.background=element_blank()) +
+  ggpreview(width=7, height=2.48)
 
 
 ############################ IDEOGRAM - HCN genes  #############################
 
 #Plot all HCN genes
-gg.hcn.base <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
-  geom_rect(aes(xmin=start2-200000, xmax=end2+200000, fill=as.factor(colour)),
-            ymin=as.numeric(all.fragments$new.strain)-0.2,
-            ymax=as.numeric(all.fragments$new.strain)+0.2,
+gg.hcn.base <- ggplot(all.fragments, aes(x=end2)) +
+  facet_nested(clade.label+new.strain.label~.,
+               space="free", switch="y", scales="free_y",
+               labeller=label_parsed,
+               nest_line=element_line(),
+               strip=strip_nested(size="variable")) +
+  geom_rect(aes(xmin=start2-200000, xmax=end2+200000,
+                ymin=as.numeric(new.strain.label)-0.2,
+                ymax=as.numeric(new.strain.label)+0.2,
+                fill=as.factor(colour)),
             colour=NA) +
-  geom_rect(aes(xmin=start2, xmax=end2),
-            ymin=as.numeric(all.fragments$new.strain)-0.14,
-            ymax=as.numeric(all.fragments$new.strain)+0.14,
+  geom_rect(aes(xmin=start2, xmax=end2,
+                ymin=as.numeric(new.strain.label)-0.14,
+                ymax=as.numeric(new.strain.label)+0.14),
             fill="white",
             colour=NA) +
   geom_rect(data=all.hcn,
-            aes(xmin=plot.xmin, xmax=plot.xmax),
-            ymin=as.numeric(all.hcn$new.strain)-0.14,
-            ymax=as.numeric(all.hcn$new.strain)+0.14,
+            aes(xmin=plot.xmin, xmax=plot.xmax,
+                ymin=as.numeric(new.strain.label)-0.14,
+                ymax=as.numeric(new.strain.label)+0.14),
             linewidth=0.05,
             fill="grey",
             colour="black") +
   scale_fill_manual(name="Syntenic block",
-                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", "#44BB99", "#77AADD", "dimgrey")) +
+                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33",
+                             "#44BB99", "#77AADD", "dimgrey")) +
   scale_x_continuous(labels=label_number(accuracy=1,
                                          scale=1e-6,
                                          suffix="Mbp"),
@@ -1226,8 +1247,10 @@ gg.hcn.base <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
         legend.text=element_text(size=3),
         legend.key.size=unit(0.2, "cm"),
         legend.margin=margin(0, 0, 0, 0, unit="pt"),
-        axis.text.x=element_blank(),
-        axis.text.y=element_text(size=8),
+        strip.background=element_blank(),
+        strip.text.y.left=element_text(size=6, face="bold", angle=0),
+        strip.clip="off",
+        axis.text=element_blank(),
         axis.ticks=element_blank(),
         axis.title=element_blank(),
         panel.grid.major=element_blank(), 
@@ -1253,19 +1276,28 @@ gg.hcn.base <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
 #                   max.overlaps=Inf,
 #                   max.time=1)
 
-#Add clade
+# #Fix order
+all.fragments <- all.fragments %>%
+  mutate(new.strain=factor(
+    new.strain,
+    levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
+             "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+  )
 all.hcn <- all.hcn %>%
-  mutate(clade=metadata$clade[match(new.strain, metadata$new.strain)],
-         clade=factor(clade, levels=c("Gh", "Ga", "GtA", "GtB")))
+  mutate(new.strain=factor(
+    new.strain,
+    levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1", "Gt-19d1",
+             "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10"))
+  )
 
 #For each HCN orthogroup...
 for (hcn.hog in sort(unique(all.hcn$hog))) {
   
   #Plot ideograms with location of genes
-  gg.hcn.hog <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
-    geom_rect(aes(xmin=start2, xmax=end2),
-              ymin=as.numeric(all.fragments$new.strain)-0.14,
-              ymax=as.numeric(all.fragments$new.strain)+0.14,
+  gg.hcn.hog <- ggplot(all.fragments, aes(x=end2)) +
+    geom_rect(aes(xmin=start2, xmax=end2,
+                  ymin=as.numeric(new.strain)-0.14,
+                  ymax=as.numeric(new.strain)+0.14),
               fill="white",
               colour="dimgrey",
               linewidth=0.1) +
@@ -1280,7 +1312,9 @@ for (hcn.hog in sort(unique(all.hcn$hog))) {
     scale_x_continuous(labels=label_number(accuracy=1,
                                            scale=1e-6,
                                            suffix="Mbp")) +
-    scale_y_discrete(labels=all.hcn$clade[match(levels(all.hcn$new.strain), all.hcn$new.strain)]) +
+    scale_y_continuous(breaks=1:length(levels(all.hcn$new.strain)),
+                     labels=all.hcn$clade[match(levels(all.hcn$new.strain),
+                                                all.hcn$new.strain)]) +
     theme(legend.position="none",
           axis.text.x=element_blank(),
           axis.text.y=element_text(size=6),
@@ -1302,7 +1336,8 @@ dev.off()
 
 
 #Filter for region of clustered HCN orthologues on Gt-8d
-df.hcn.zoom <- `df.hcn.cumulative.Gt-8d` %>% filter(colour == "pseu_chr3")
+df.hcn.zoom <- `df.hcn.cumulative.Gt-8d` %>%
+  filter(colour == "pseu_chr3")
 
 #Format RIP for plotting above ideogram
 rip.zoom <- all.rip %>%
@@ -1310,8 +1345,10 @@ rip.zoom <- all.rip %>%
   mutate(CRI.plot=CRI*0.02)
 
 #Plot HCN region in Gt-8d
-gg.hcn.zoom <- ggplot(`df.fragments.cumulative.Gt-8d`, aes(x=end2, y=new.strain)) +
-  geom_rect(aes(xmin=start2-150000, xmax=end2+150000, fill=as.factor(colour)),
+gg.hcn.zoom <- ggplot(`df.fragments.cumulative.Gt-8d`,
+                      aes(x=end2, y=new.strain)) +
+  geom_rect(aes(xmin=start2-150000, xmax=end2+150000,
+                fill=as.factor(colour)),
             ymin=0.8,
             ymax=1.2,
             colour=NA) +
@@ -1379,7 +1416,8 @@ gg.hcn.zoom <- ggplot(`df.fragments.cumulative.Gt-8d`, aes(x=end2, y=new.strain)
            fontface="bold", size=2) +
   coord_cartesian(xlim=c(18700000, 29000000)) +
   scale_fill_manual(name="Syntenic block",
-                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", "#44BB99", "#77AADD", "dimgrey")) +
+                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33",
+                             "#44BB99", "#77AADD", "dimgrey")) +
   scale_colour_manual(values=c("grey", "black")) +
   scale_x_continuous(labels=label_number(accuracy=1,
                                          scale=1e-6,
@@ -1419,59 +1457,67 @@ df.avenacinase <-
 
 #Get avenacinase orthogroup
 df.avenacinase.ortho <- all.genes %>%
-  mutate(hog=all.ortho.genes$hog[match(sub("-", "", all.genes$ID), sub("\\.1$", "", all.ortho.genes$gene))]) %>%
+  mutate(hog=all.ortho.genes$hog[
+    match(sub("-", "", all.genes$ID), sub("\\.1$", "", all.ortho.genes$gene))
+    ]) %>%
   filter(hog == "N0.HOG0008406")
 
 #Plot ideograms with location of avenacinase gene
-gg.avenacinase.pos <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
-  geom_rect(aes(xmin=start2-200000, xmax=end2+200000, fill=as.factor(colour)),
-            ymin=as.numeric(all.fragments$new.strain)-0.2,
-            ymax=as.numeric(all.fragments$new.strain)+0.2,
+gg.avenacinase.pos <- ggplot(all.fragments, aes(x=end2)) +
+  facet_nested(clade.label+new.strain.label~.,
+               space="free", switch="y", scales="free_y",
+               labeller=label_parsed,
+               nest_line=element_line(),
+               strip=strip_nested(size="variable")) +
+  geom_rect(aes(xmin=start2-200000, xmax=end2+200000,
+                ymin=as.numeric(new.strain.label)-0.2,
+                ymax=as.numeric(new.strain.label)+0.2,
+                fill=as.factor(colour)),
             colour=NA) +
-  geom_rect(aes(xmin=start2, xmax=end2),
-            ymin=as.numeric(all.fragments$new.strain)-0.14,
-            ymax=as.numeric(all.fragments$new.strain)+0.14,
+  geom_rect(aes(xmin=start2, xmax=end2,
+                ymin=as.numeric(new.strain.label)-0.14,
+                ymax=as.numeric(new.strain.label)+0.14),
             fill="white",
             colour=NA) +
   geom_rect(data=df.avenacinase.ortho,
             aes(xmin=plot.xmin, xmax=plot.xmax,
-                ymin=as.numeric(new.strain)-0.14,
-                ymax=as.numeric(new.strain)+0.14),
+                ymin=as.numeric(new.strain.label)-0.14,
+                ymax=as.numeric(new.strain.label)+0.14),
             linewidth=0.5,
             fill="black",
             colour="black") +
-  annotate(geom="label",
-           x=df.avenacinase.ortho %>%
-             filter(new.strain == "Gt-LH10") %>%
-             mutate(pos=(plot.xmin+plot.xmax)/2) %>%
-             pull(pos),
-           label="avenacinase",
-           y=as.numeric(df.avenacinase.ortho %>%
-                          filter(new.strain == "Gt-LH10") %>% 
-                          pull(new.strain))+0.6,
-           label.size=NA,
-           fontface="bold",
-           fill="black",
-           colour="white",
-           size=2,
-           label.padding=unit(2, "pt")) +
+  geom_label(data=df.avenacinase.ortho %>%
+               filter(new.strain == "Gt-LH10") %>%
+               mutate(pos=(plot.xmin+plot.xmax)/2),
+             aes(x=pos, y=as.numeric(new.strain.label)),
+             label="avenacinase",
+             label.size=NA,
+             fontface="bold",
+             fill="black",
+             colour="white",
+             size=2,
+            label.padding=unit(2, "pt"),
+            vjust=-1) +
   scale_fill_manual(name="Syntenic block",
-                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", "#44BB99", "#77AADD", "dimgrey")) +
+                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33",
+                             "#44BB99", "#77AADD", "dimgrey")) +
   scale_x_continuous(labels=label_number(accuracy=1,
                                          scale=1e-6,
                                          suffix="Mbp"),
                      expand=c(0, 100)) +
   coord_cartesian(clip="off") +
   theme(legend.position="none",
-        axis.text.x=element_blank(),
-        axis.text.y=element_text(size=6),
+        axis.text=element_blank(),
         axis.ticks=element_blank(),
         axis.title=element_blank(),
-        plot.title=element_text(size=6, face="bold"),
+        strip.background=element_blank(),
+        strip.text.y.left=element_text(size=6, face="bold", angle=0),
+        strip.clip="off",
         panel.grid.major=element_blank(), 
         panel.grid.minor=element_blank(), 
         panel.background=element_blank(),
-        plot.margin=margin(20, 5.5, 5.5, 20))
+        plot.margin=margin(20, 5.5, 5.5, 20)) +
+  ggpreview(width=3.7, height=2.17)
 
 #Read in avenacinase gene tree
 avenacinase.tree <- 
@@ -1540,11 +1586,13 @@ for (i in 1:(length(pos)-1)) {
   
 }
 
-gg.avenacinase.aln <- plot_grid(plotlist=mget(ls(pattern="gg.msa.")), align="v", axis="l", ncol=1)
+gg.avenacinase.aln <- 
+  plot_grid(plotlist=mget(ls(pattern="gg.msa.")), align="v", axis="l", ncol=1)
 
 #Write to file
 pdf(paste0(dir.comp, "avenacinase-", Sys.Date(), ".pdf"), width=7, height=6.5)
-plot_grid(plot_grid(gg.avenacinase.pos, gg.tree.avenacinase, nrow=1, rel_widths=c(1.1, 1), labels="auto"),
+plot_grid(plot_grid(gg.avenacinase.pos, gg.tree.avenacinase
+                    , nrow=1, rel_widths=c(1.1, 1), labels="auto"),
           gg.avenacinase.aln, ncol=1, rel_heights=c(1, 2), labels=c("", "c"))
 dev.off()
 
@@ -1557,36 +1605,43 @@ df.mat.loci <- do.call("rbind", lapply(
   function(fn) 
     data.frame(read.csv(fn, sep="\t", header=FALSE))
 )) %>%
-  dplyr::rename(accession="V1", ID="V2", evalue="V3", bitscore="V4", pident="V5", length="V6") %>%
+  dplyr::rename(accession="V1", ID="V2", evalue="V3",
+                bitscore="V4", pident="V5", length="V6") %>%
   mutate(locus=recode(accession,
                       `BAC65091.1`="MAT1-1-1",
                       `BAC65094.1`="MAT1-2-1",
                       `ESU14390.1`="MAT1-1-1"),
          ID=sub("\\..*$", "", ID)) %>%
   dplyr::distinct(locus, ID, .keep_all=TRUE) %>%
-  left_join(all.genes, by="ID")
+  left_join(all.genes, by="ID") 
 
 #Plot ideograms of MAT loci
-gg.mat <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
-  geom_rect(aes(xmin=start2-200000, xmax=end2+200000, fill=as.factor(colour)),
-            ymin=as.numeric(all.fragments$new.strain)-0.2,
-            ymax=as.numeric(all.fragments$new.strain)+0.2,
+gg.mat <- ggplot(all.fragments, aes(x=end2)) +
+  facet_nested(clade.label+new.strain.label~.,
+               space="free", switch="y", scales="free_y",
+               labeller=label_parsed,
+               nest_line=element_line(),
+               strip=strip_nested(size="variable")) +
+  geom_rect(aes(xmin=start2-200000, xmax=end2+200000,
+                ymin=as.numeric(new.strain.label)-0.2,
+                ymax=as.numeric(new.strain.label)+0.2,
+                fill=as.factor(colour)),
             colour=NA) +
-  geom_rect(aes(xmin=start2, xmax=end2),
-            ymin=as.numeric(all.fragments$new.strain)-0.14,
-            ymax=as.numeric(all.fragments$new.strain)+0.14,
+  geom_rect(aes(xmin=start2, xmax=end2,
+                ymin=as.numeric(new.strain.label)-0.14,
+                ymax=as.numeric(new.strain.label)+0.14),
             fill="white",
             colour=NA) +
   geom_rect(data=df.mat.loci,
             aes(xmin=plot.xmin, xmax=plot.xmax,
-                ymin=as.numeric(new.strain)-0.14,
-                ymax=as.numeric(new.strain)+0.14),
+                ymin=as.numeric(new.strain.label)-0.14,
+                ymax=as.numeric(new.strain.label)+0.14),
             linewidth=0.5,
             fill="black",
             colour="black") +
   geom_label(data=df.mat.loci,
              aes(x=(plot.xmin+plot.xmax)/2, label=locus),
-             y=as.numeric(df.mat.loci$new.strain)+0.5,
+             y=as.numeric(df.mat.loci$new.strain.label)+0.35,
              label.size=NA,
              fontface="bold",
              fill="black",
@@ -1594,22 +1649,25 @@ gg.mat <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
              size=1.2,
              label.padding=unit(1, "pt")) +
   scale_fill_manual(name="Syntenic block",
-                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", "#44BB99", "#77AADD", "dimgrey")) +
+                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33",
+                             "#44BB99", "#77AADD", "dimgrey")) +
   scale_x_continuous(labels=label_number(accuracy=1,
                                          scale=1e-6,
                                          suffix="Mbp"),
                      expand=c(0, 100)) +
   coord_cartesian(clip="off") +
   theme(legend.position="none",
-        axis.text.x=element_blank(),
-        axis.text.y=element_text(size=6),
+        axis.text=element_blank(),
         axis.ticks=element_blank(),
         axis.title=element_blank(),
-        plot.title=element_text(size=6, face="bold"),
+        strip.background=element_blank(),
+        strip.text.y.left=element_text(size=6, face="bold", angle=0),
+        strip.clip="off",
         panel.grid.major=element_blank(), 
         panel.grid.minor=element_blank(), 
         panel.background=element_blank(),
-        plot.margin=margin(20, 5.5, 5.5, 20))
+        plot.margin=margin(20, 5.5, 5.5, 20)) +
+  ggpreview(width=3.3, height=2.17)
 
 #Write to file
 pdf(paste0(dir.comp, "MAT_loci-", Sys.Date(), ".pdf"), width=3.3, height=2.17)
@@ -1621,24 +1679,10 @@ dev.off()
 
 #Combine TE and CSEP density by window
 df.te.csep <- left_join(all.CSEP.density, all.te.density,
-                        by=c("max", "strain", "new.strain", "seqnames")) %>%
-  mutate(clade=factor(metadata$clade[match(new.strain, metadata$new.strain)],
-                      levels=c("Gh", "Ga", "GtA", "GtB")),
-         clade=recode_factor(clade,
-                             "Gh"='paste(italic("Gh"))',
-                             "Ga"='paste(italic("Ga"))',
-                             "GtA"='paste(italic("Gt"), "A")',
-                             "GtB"='paste(italic("Gt"), "B")'),
-         new.strain=recode_factor(new.strain,
-                                  "Gh-1B17"='paste("Gh-1B17")',
-                                  "Gh-2C17"='paste("Gh-2C17")',
-                                  "Ga-CB1"='paste("Ga-CB1")',
-                                  "Ga-3aA1"='paste("Ga-3aA1")',
-                                  "Gt-19d1"='paste("Gt-19d1")',
-                                  "Gt-8d"='paste("Gt-8d")',
-                                  "Gt-23d"='paste("Gt-23d")',
-                                  "Gt-4e"='paste("Gt-4e")',
-                                  "Gt-LH10"='paste("Gt-LH10")'))
+                        by=c("max", "strain", "new.strain", "seqnames")) 
+
+#Set plot order
+df.te.csep <- plot_orders_rev(df.te.csep)
 
 #Check for normality
 for (strain in unique(df.te.csep$new.strain)) {
@@ -1658,6 +1702,9 @@ df.te.csep.cor <- df.te.csep %>%
   cor_test(num.x, num.y, method="kendall") %>%
   filter(p < 0.05)
 
+#Set plot order
+df.te.csep.cor <- plot_orders_rev(df.te.csep.cor)
+
 #Function to force axis labels to be integers
 integer_breaks <- function(n=5, ...) {
   fxn <- function(x) {
@@ -1670,12 +1717,12 @@ integer_breaks <- function(n=5, ...) {
 
 #Plot scatterplots of TE and CSEP density
 gg.te.cseps <- ggplot(df.te.csep, aes(x=num.x, y=num.y)) +
-  facet_nested_wrap(~clade+new.strain, nrow=1,
+  facet_nested_wrap(~clade.label+new.strain.label, nrow=1,
                     nest_line=element_line(),
                     labeller=label_parsed) +
-  #facet_wrap(~new.strain, nrow=1) +
   geom_point(size=0.3) +
-  geom_smooth(method="loess", linewidth=0.3, colour="#87AE88", fill="#87AE88") +
+  geom_smooth(method="loess", linewidth=0.3,
+              colour="#87AE88", fill="#87AE88") +
   geom_text(data=df.te.csep.cor,
             aes(label=paste('tau', "==", round(cor, 2))),
             parse=TRUE,
@@ -1697,7 +1744,8 @@ gg.te.cseps <- ggplot(df.te.csep, aes(x=num.x, y=num.y)) +
         plot.margin=margin(5.5, 5.5, 2, 5.5))
 
 #Combine gene and CSEP density by window
-df.gene.csep <- left_join(all.CSEP.density, all.gene.density, by=c("max", "strain", "new.strain", "seqnames"))
+df.gene.csep <- left_join(all.CSEP.density, all.gene.density,
+                          by=c("max", "strain", "new.strain", "seqnames"))
 
 #Check for normality
 for (strain in unique(df.gene.csep$new.strain)) {
@@ -1721,7 +1769,8 @@ df.gene.csep.cor <- df.gene.csep %>%
 gg.gene.csep <- ggplot(df.gene.csep, aes(x=num.x, y=num.y)) +
   facet_wrap(~new.strain, nrow=1) +
   geom_point(size=0.3) +
-  geom_smooth(method="loess", linewidth=0.3, colour="#87AE88", fill="#87AE88") +
+  geom_smooth(method="loess", linewidth=0.3,
+              colour="#87AE88", fill="#87AE88") +
   geom_text(data=df.gene.csep.cor,
             aes(label=paste('tau', "==", round(cor, 2))),
             parse=TRUE,
@@ -1742,17 +1791,10 @@ gg.gene.csep <- ggplot(df.gene.csep, aes(x=num.x, y=num.y)) +
 ############################# TE-GENE DISTANCES  ###############################
 
 #Combine TE-gene distance results for all strains
-all.distances <- do.call("rbind", mget(ls(pattern="df.te.distances."))) %>%
-  mutate(new.strain=factor(new.strain,
-                           levels=c("Gh-1B17", "Gh-2C17", "Ga-CB1", "Ga-3aA1",
-                                    "Gt-19d1", "Gt-8d", "Gt-23d", "Gt-4e", "Gt-LH10")),
-         clade=metadata$clade[match(new.strain, metadata$new.strain)],
-         clade=factor(clade, levels=c("Gh", "Ga", "GtA", "GtB")),
-         clade=recode_factor(clade,
-                             "Gh"='paste(italic("Gh"))',
-                             "Ga"='paste(italic("Ga"))',
-                             "GtA"='paste(italic("Gt"), "A")',
-                             "GtB"='paste(italic("Gt"), "B")'))
+all.distances <- do.call("rbind", mget(ls(pattern="df.te.distances."))) 
+
+#Set plot order
+all.distances <- plot_orders_rev(all.distances)
 
 #Print mean distances (CSEPs versus other genes versus HCN genes) for each strain
 all.distances %>%
@@ -1796,27 +1838,20 @@ distances.cseps.test <- all.distances %>%
   filter(group %in% c("Non-CSEP", "CSEPs")) %>%
   group_by(new.strain) %>%
   wilcox_test(distance ~ group) %>%
-  mutate(label=ifelse(p < 0.05, "*", ""),
-         clade=metadata$clade[match(new.strain, metadata$new.strain)],
-         clade=factor(clade, levels=c("Gh", "Ga", "GtA", "GtB")),
-         clade=recode_factor(clade,
-                             "GtB"='paste(italic("Gt"), "B")',
-                             "GtA"='paste(italic("Gt"), "A")',
-                             "Ga"='paste(italic("Ga"))',
-                             "Gh"='paste(italic("Gh"))'))
+  mutate(label=ifelse(p < 0.05, "*", ""))
+
+#Set plot order
+distances.cseps.test <- plot_orders_rev(distances.cseps.test)
 
 #Do Wilcoxon rank sum test on distance for HCN vs other genes for each strain
 distances.hcn.test <- all.distances %>%
-  filter(group %in% c("Non-HCN", "HCN"), clade != 'paste(italic("Gt"), "A")') %>%
+  filter(group %in% c("Non-HCN", "HCN"), clade != "GtA") %>%
   group_by(new.strain) %>%
   wilcox_test(distance ~ group) %>%
-  mutate(label=ifelse(p < 0.05, "*", ""),
-         clade=metadata$clade[match(new.strain, metadata$new.strain)],
-         clade=factor(clade, levels=c("Gh", "Ga", "GtB")),
-         clade=recode_factor(clade,
-                             "Gh"='paste(italic("Gh"))',
-                             "Ga"='paste(italic("Ga"))',
-                             "GtB"='paste(italic("Gt"), "B")'))
+  mutate(label=ifelse(p < 0.05, "*", ""))
+
+#Set plot order
+distances.hcn.test <- plot_orders_rev(distances.hcn.test)
 
 #Check for normality (regardless of CSEP or not)
 for (strain in unique(all.distances$new.strain)) {
@@ -1855,19 +1890,16 @@ distances.species.test.labels <- data.frame(
                                       "-", distances.species.test$group2))
       )$Letters)
 ) %>%
-  mutate(new.strain=sub("_", "-", strain),
-         clade=metadata$clade[match(new.strain, metadata$new.strain)],
-         clade=factor(clade, levels=c("Gh", "Ga", "GtA", "GtB")),
-         clade=recode_factor(clade,
-                             "Gh"='paste(italic("Gh"))',
-                             "Ga"='paste(italic("Ga"))',
-                             "GtA"='paste(italic("Gt"), "A")',
-                             "GtB"='paste(italic("Gt"), "B")'))
+  mutate(new.strain=sub("_", "-", strain))
+
+#Set plot order
+distances.species.test.labels <- plot_orders_rev(distances.species.test.labels)
 
 #Plot box and violin plots for average TE-gene distance
-gg.distances.cseps <- ggplot(all.distances %>% filter(group %in% c("Non-CSEP", "CSEPs")),
+gg.distances.cseps <- ggplot(all.distances %>%
+                               filter(group %in% c("Non-CSEP", "CSEPs")),
                              aes(x=new.strain, y=distance, fill=group)) +
-  facet_grid(~clade, scales="free_x", space="free", switch="x",
+  facet_grid(~clade.label, scales="free_x", space="free", switch="x",
              labeller=label_parsed) +
   geom_violin(position=position_dodge(width=0.8),
               linewidth=0.3,
@@ -1930,10 +1962,10 @@ dev.off()
 gg.distances.hcn <- 
   ggplot(all.distances %>%
            filter(group %in% c("Non-HCN", "HCN"),
-                  clade != 'paste(italic("Gt"), "A")') %>%
+                  clade != "GtA") %>%
            droplevels(),
          aes(x=new.strain, y=distance)) +
-  facet_grid(~clade, scales="free_x", space="free", switch="x",
+  facet_grid(~clade.label, scales="free_x", space="free", switch="x",
              labeller=label_parsed) +
   geom_boxplot(aes(colour=group),
                width=0.3, linewidth=0.3,
@@ -1997,49 +2029,18 @@ all.isoform.numbers <- all.isoforms %>%
   group_by(new.strain, isoforms) %>%
   summarise(num=n()) %>%
   left_join(all.gene.numbers) %>%
-  mutate(prop=num/total.genes,
-         clade=factor(metadata$clade[match(new.strain, metadata$new.strain)],
-                      levels=c("Gh", "Ga", "GtA", "GtB")),
-         clade=recode_factor(clade,
-                             "Gh"='paste(italic("Gh"))',
-                             "Ga"='paste(italic("Ga"))',
-                             "GtA"='paste(italic("Gt"), "A")',
-                             "GtB"='paste(italic("Gt"), "B")'))
+  mutate(prop=num/total.genes)
+
+#Set plot order
+all.isoform.numbers <- plot_orders_rev(all.isoform.numbers)
 
 #Calculate overall proportion of total genes with 2+ isoforms for each strain
 all.isoform.rates <- all.isoform.numbers %>%
   group_by(new.strain) %>%
-  summarise(prop=sum(prop), x=max(isoforms)) %>%
-  mutate(clade=factor(metadata$clade[match(new.strain, metadata$new.strain)],
-                      levels=c("Gh", "Ga", "GtA", "GtB")),
-         clade=recode_factor(clade,
-                             "Gh"='paste(italic("Gh"))',
-                             "Ga"='paste(italic("Ga"))',
-                             "GtA"='paste(italic("Gt"), "A")',
-                             "GtB"='paste(italic("Gt"), "B")'),
-         new.strain=recode_factor(new.strain,
-                                  "Gh-1B17"='paste("Gh-1B17")',
-                                  "Gh-2C17"='paste("Gh-2C17")',
-                                  "Ga-CB1"='paste("Ga-CB1")',
-                                  "Ga-3aA1"='paste("Ga-3aA1")',
-                                  "Gt-19d1"='paste("Gt-19d1")',
-                                  "Gt-8d"='paste("Gt-8d")',
-                                  "Gt-23d"='paste("Gt-23d")',
-                                  "Gt-4e"='paste("Gt-4e")',
-                                  "Gt-LH10"='paste("Gt-LH10")'))
+  summarise(prop=sum(prop), x=max(isoforms))
 
-#Fix levels
-all.isoform.numbers <- all.isoform.numbers %>%
-  mutate(new.strain=recode_factor(new.strain,
-                                  "Gh-1B17"='paste("Gh-1B17")',
-                                  "Gh-2C17"='paste("Gh-2C17")',
-                                  "Ga-CB1"='paste("Ga-CB1")',
-                                  "Ga-3aA1"='paste("Ga-3aA1")',
-                                  "Gt-19d1"='paste("Gt-19d1")',
-                                  "Gt-8d"='paste("Gt-8d")',
-                                  "Gt-23d"='paste("Gt-23d")',
-                                  "Gt-4e"='paste("Gt-4e")',
-                                  "Gt-LH10"='paste("Gt-LH10")'))
+#Set plot order
+all.isoform.rates <- plot_orders_rev(all.isoform.rates)
 
 #Function to force axis labels to be multiples of 4
 two_breaks <- function(...) {
@@ -2053,7 +2054,7 @@ two_breaks <- function(...) {
 
 #Plot histogram of number of isoforms
 gg.isoforms <- ggplot(all.isoform.numbers, aes(x=isoforms, y=prop*100)) +
-  facet_nested(~clade+new.strain, scales="free_x", space="free",
+  facet_nested(~clade.label+new.strain.label, scales="free_x", space="free",
                nest_line=element_line(), labeller=label_parsed) +
   geom_bar(stat="identity") +
   geom_label(data=all.isoform.rates,
@@ -2093,8 +2094,10 @@ dev.off()
 ######################## CSEP LOCATION PERMUTATIONS  ###########################
 
 #Overall telomere results
-unlist(lapply(mget(paste0("csep.perm.", strains$strain)), function(x) x$meanDistance$pval))
-unlist(lapply(mget(paste0("csep.perm.", strains$strain)), function(x) x$meanDistance$zscore))
+unlist(lapply(mget(paste0("csep.perm.", strains$strain)),
+              function(x) x$meanDistance$pval))
+unlist(lapply(mget(paste0("csep.perm.", strains$strain))
+              , function(x) x$meanDistance$zscore))
 
 #Overall TE results
 unlist(lapply(mget(paste0("csep.te.perm.", strains$strain)),
@@ -2105,7 +2108,8 @@ unlist(lapply(mget(paste0("csep.te.perm.", strains$strain)),
 #Summarise per pseudochromosome permutation results
 perm.results <- 
   rbind(
-    data.frame(test="telomeres",
+    data.frame(
+      test="telomeres",
                strain=sub(".pseu.*", "", sub("csep.perm.", "", ls(pattern="csep.perm.*.pseu.*"))),
                chr=sub(".*.pseu", "pseu", sub("csep.perm.", "", ls(pattern="csep.perm.*.pseu.*"))),
                p=unlist(lapply(mget(ls(pattern="csep.perm.*.pseu.*")),
@@ -2113,8 +2117,10 @@ perm.results <-
                z=unlist(lapply(mget(ls(pattern="csep.perm.*.pseu.*")),
                                function(x) x$meanDistance$zscore)),
                direction=unlist(lapply(mget(ls(pattern="csep.perm.*.pseu.*")),
-                                       function(x) x$meanDistance$alternative))),
-    data.frame(test="TEs",
+                                       function(x) x$meanDistance$alternative))
+      ),
+    data.frame(
+      test="TEs",
                strain=sub(".pseu.*", "", sub("csep.te.perm.", "", ls(pattern="csep.te.perm.*.pseu.*"))),
                chr=sub(".*.pseu", "pseu", sub("csep.te.perm.", "", ls(pattern="csep.te.perm.*.pseu.*"))),
                p=unlist(lapply(mget(ls(pattern="csep.te.perm.*.pseu.*")),
@@ -2122,7 +2128,8 @@ perm.results <-
                z=unlist(lapply(mget(ls(pattern="csep.te.perm.*.pseu.*")),
                                function(x) x$meanDistance$zscore)),
                direction=unlist(lapply(mget(ls(pattern="csep.te.perm.*.pseu.*")),
-                                       function(x) x$meanDistance$alternative)))
+                                       function(x) x$meanDistance$alternative))
+      )
   )
 
 #Format telomere distance results for plotting 
@@ -2230,6 +2237,9 @@ manual.captains <-
   dplyr::rename(ID="V1", pos="V2") %>%
   left_join(all.genes)
 
+#Set plot order
+manual.captains <- plot_orders_rev(manual.captains)
+
 #Read in all tyrosine recombinases predicted by starfish
 all.tyr <- 
   read.csv(paste0(dir.comp, "starfish/geneFinder/gaeumannomyces.bed"),
@@ -2274,7 +2284,8 @@ starship.euler.plot <-
        labels=list(cex=0.5,
                    col="black",
                    padding=unit(c(1, 1), "pt")),
-       fills=list(fill=c("white", "#FFAD48", "red", "khaki1", rep("white", 2), "black")),
+       fills=list(fill=c("white", "#FFAD48", "red", "khaki1",
+                         rep("white", 2), "black")),
        edges=list(col="dimgrey",
                   lwd=0.3),
        quantities=list(labels=c(starship.methods[1], 
@@ -2297,15 +2308,16 @@ all.cargo <- all.starships %>%
   filter(str_count(category, "[.]") == 1)
 
 #Plot ideograms with starship locations
-gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
-  geom_rect(aes(xmin=start2-200000, xmax=end2+200000, fill=as.factor(colour)),
+gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2)) +
+  geom_rect(aes(xmin=start2-200000, xmax=end2+200000,
+                ymin=as.numeric(new.strain)-0.2,
+                ymax=as.numeric(new.strain)+0.2,
+                fill=as.factor(colour)),
             alpha=0.5,
-            ymin=as.numeric(all.fragments$new.strain)-0.2,
-            ymax=as.numeric(all.fragments$new.strain)+0.2,
             colour=NA) +
-  geom_rect(aes(xmin=start2, xmax=end2),
-            ymin=as.numeric(all.fragments$new.strain)-0.14,
-            ymax=as.numeric(all.fragments$new.strain)+0.14,
+  geom_rect(aes(xmin=start2, xmax=end2,
+                ymin=as.numeric(new.strain)-0.14,
+                ymax=as.numeric(new.strain)+0.14),
             fill="white",
             colour=NA,
             linewidth=0.1) +
@@ -2330,18 +2342,19 @@ gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
   geom_text(data=manual.captains %>%
               filter(!ID %in% all.captains$gene,
                      ID %in% all.tyr$gene),
-            aes(x=(plot.xmin+plot.xmax)/2, y=as.numeric(new.strain)-0.3,
+            aes(x=(plot.xmin+plot.xmax)/2,
+                y=as.numeric(new.strain)-0.3,
                 label="*"),
             fontface="bold",
             colour="black",
             size=2) +
   geom_rect(data=all.cargo,
-            aes(xmin=plot.xmin, xmax=plot.xmax),
+            aes(xmin=plot.xmin, xmax=plot.xmax,
+                ymin=as.numeric(new.strain)-0.14,
+                ymax=as.numeric(new.strain)+0.14),
             linewidth=0.05,
             fill="grey",
-            colour="grey",
-            ymin=as.numeric(all.cargo$new.strain)-0.14,
-            ymax=as.numeric(all.cargo$new.strain)+0.14) +
+            colour="grey") +
   geom_rect(data=all.captains %>% filter(gene %in% manual.captains$ID),
             aes(xmin=plot.xmin, xmax=plot.xmax,
                 ymin=as.numeric(new.strain)-0.14,
@@ -2383,9 +2396,10 @@ gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
                                          suffix="Mbp"),
                      expand=c(0, 100)) +
   scale_y_discrete(limits=seq(1, 9.5),
-                   labels=levels(all.fragments$new.strain)) +
+                     labels=levels(all.starships$new.strain)) +
   scale_fill_manual(name="Syntenic block",
-                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", "#44BB99", "#77AADD", "dimgrey")) +
+                    values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33",
+                             "#44BB99", "#77AADD", "dimgrey")) +
   guides(fill=guide_legend(title.position="top",
                            title.theme=element_text(face="bold", size=6))) +
   theme_minimal() +
@@ -2394,14 +2408,19 @@ gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2, y=new.strain)) +
         legend.text=element_text(size=5),
         legend.key.size=unit(0.2, "cm"),
         legend.margin=margin(0, 0, 0, 0, unit="pt"),
-        axis.text.x=element_blank(),
         axis.text.y=element_text(size=8),
+        axis.text.x=element_blank(),
         axis.ticks=element_blank(),
         axis.title=element_blank(),
-        plot.margin=margin(5.5, 30, 5.5, 10),
+        strip.background=element_blank(),
+        strip.text.y.left=element_text(size=6, face="bold", angle=0, vjust=-0.1),
+        strip.clip="off",
+        panel.spacing=unit(0.5, "lines"),
+        plot.margin=margin(5.5, 30, 5.5, 30),
         panel.grid.major=element_blank(), 
         panel.grid.minor=element_blank(), 
-        panel.background=element_blank())
+        panel.background=element_blank()) +
+  ggpreview(width=7, height=4)
 
 #Write to file
 pdf(paste0(dir.comp, "starships_locations-", Sys.Date(), ".pdf"), width=7, height=4)
@@ -2487,7 +2506,7 @@ starship.seqs <- gg.starship.schematic.tmp %>%
          new.strain=metadata$new.strain[match(strain, metadata$strain)],
          clade=factor(metadata$clade[match(sub("_.*", "", elementID), metadata$strain)],
                       levels=c("GtB", "GtA", "Ga", "Gh")),
-         clade=recode_factor(
+         clade.label=recode_factor(
            clade,
            "GtB"='paste(italic("Gt"), "B")',
            "GtA"='paste(italic("Gt"), "A")',
@@ -2496,28 +2515,29 @@ starship.seqs <- gg.starship.schematic.tmp %>%
 
 #Add all tracks to schematic
 gg.starship.schematic <- gggenomes(seqs=starship.seqs, genes=starship.feats, feats=starship.nested) +
-  facet_grid(clade~., scales="free", space="free", switch="y",
+  facet_grid(clade.label~., scales="free",
+             space="free", switch="y",
              labeller=label_parsed) +
   geom_feat(data=gg.starship.schematic.tmp %>%
               pull_feats() %>%
-              mutate(clade=recode_factor(
+              mutate(clade.label=recode_factor(
                 clade,
                 "Ga"='paste(italic("Ga"))')),
             colour="khaki1", size=5) +
   geom_feat_text(data=gg.starship.schematic.tmp %>%
                    pull_feats() %>%
-                   mutate(clade=recode_factor(
+                   mutate(clade.label=recode_factor(
                      clade,
                      "Ga"='paste(italic("Ga"))')),
                  label="Ga-3aA1_s00047", size=2, nudge_y=-0.8, nudge_x=130000) +
   geom_seq(linewidth=0.3) +
   geom_bin_label(data=gg.starship.schematic.tmp %>%
                    pull_bins() %>%
-                   mutate(clade=starship.seqs$clade[match(bin_id, starship.seqs$bin_id)]),
+                   mutate(clade.label=starship.seqs$clade.label[match(bin_id, starship.seqs$bin_id)]),
                  size=2) +
   geom_gene(data=gg.starship.schematic.tmp %>%
               pull_genes() %>%
-              mutate(clade=recode_factor(
+              mutate(clade.label=recode_factor(
                 clade,
                 "GtB"='paste(italic("Gt"), "B")',
                 "GtA"='paste(italic("Gt"), "A")',
@@ -2557,7 +2577,7 @@ starship.repeats <- gg.starship.schematic.tmp %>%
          repeat.pos=(repeat.x+repeat.xend)/2,
          clade=factor(metadata$clade[match(sub("_.*", "", seq_id), metadata$new.strain)],
                       levels=c("GtB", "GtA", "Ga", "Gh")),
-         clade=recode_factor(
+         clade.label=recode_factor(
            clade,
            "GtB"='paste(italic("Gt"), "B")',
            "GtA"='paste(italic("Gt"), "A")',
@@ -2629,7 +2649,7 @@ starship.rip <- do.call("rbind", mget(ls(pattern="rip.starship."))) %>%
          y=baseline+(CRI*0.1),
          clade=factor(metadata$clade[match(sub("_.*", "", seq_id), metadata$new.strain)],
                       levels=c("GtB", "GtA", "Ga", "Gh")),
-         clade=recode_factor(
+         clade.label=recode_factor(
            clade,
            "GtB"='paste(italic("Gt"), "B")',
            "GtA"='paste(italic("Gt"), "A")',
