@@ -3,7 +3,7 @@
 ![Workflow schematic](schematic.png)
 
 Bioinformatics workflow for:
-> Hill et al. (in prep) ***
+> Hill et al. (in review) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*
 
 The pipeline was written for and run on Norwich BioScience Institutes' HPC cluster which uses the SLURM batch-queue system. This means that many of the bash scripts (`.sh` file endings) specify core allocation, run times and memory usage allocation that may need to be adapted for different platforms.
 
@@ -107,11 +107,12 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 `cd 06_synteny` 📁
 
 1. `sbatch 001_genespace.sh` formats protein and gff3 files and submits `genespace.R` to infer synteny between strains using [GENESPACE](https://github.com/jtlovell/GENESPACE).
-2. `sbatch 002_gc.sh` calculates GC content in 100,000 bp windows across each genome using [bedtools](https://github.com/arq5x/bedtools2).
-3. `sbatch -a 1-9 003_RIP.sh` calculates the composite RIP index (CRI) across each genomes using [this perl script](https://github.com/hyphaltip/fungaltools/tree/master/scripts).
-4. `sbatch -a 1-9 004_agp_prep.sh` prepares preliminary AGP files to inform the arrangement of contigs into chromosomes.
-5. `sbatch -a 1-9 005_agptools.sh` creates new gapped fasta files ready for NCBI submission from manually curated AGP files.
-6. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
+2. `sbatch -a 1,9 002_readsmap_filter.sh` filters secondary alignments out of BAM files produced during assembly for visualising read alignment across translocations in R (see below).
+3. `sbatch 003_gc.sh` calculates GC content in 100,000 bp windows across each genome using [bedtools](https://github.com/arq5x/bedtools2).
+4. `sbatch -a 1-9 004_RIP.sh` calculates the composite RIP index (CRI) across each genomes using [this perl script](https://github.com/hyphaltip/fungaltools/tree/master/scripts).
+5. `sbatch -a 1-9 005_agp_prep.sh` prepares preliminary AGP files to inform the arrangement of contigs into chromosomes.
+6. `sbatch -a 1-9 006_agptools.sh` creates new gapped fasta files ready for NCBI submission from manually curated AGP files.
+7. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
 
 ## 7 Comparative genomics
 
@@ -128,4 +129,4 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 ## Citation
 
-> Hill et al. (in prep) ****
+> pending
