@@ -121,7 +121,7 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 1. `sbatch 001_orthogroup_assignment.sh` submits `orthogroup_assigner.R` which makes abundance matrices of HOGs from OrthoFinder.
 2. `sbatch 002_big-scape.sh` predicts biosynthetic gene clusters from earlier antiSMASH output using [BiG-SCAPE](https://github.com/medema-group/BiG-SCAPE).
 3. `sbatch 003_lifestyle_test.sh` submits `lifestyle_v_phylogeny.R` which prepares input files and submits `permanova.sh`, a PERMANOVA-based test comparing the effect of phylogeny versus lifestyle on gene variance. `run_edited.py` is modified from the original script `run.py` by [Mesny &amp; Vannier](https://github.com/fantin-mesny/Effect-Of-Biological-Categories-On-Genomes-Composition).
-4. `sbatch 004_starfish.sh` predicts Starship giant mobile elements using [starfish](https://github.com/egluckthaler/starfish).
+4. `sbatch 004_starfish.sh` predicts *Starship* giant mobile elements using [starfish](https://github.com/egluckthaler/starfish).
 5. `sbatch 005_align_tyr.sh` aligns tyrosine recombinase genes predicted by starfish using MAFFT and trims alignments using [trimAl](https://github.com/inab/trimal).
 6. `sbatch 006_raxmlng_tyr.sh` builds an ML gene tree for tyrosine recombinases using RAxML-NG with bootstrapping until convergence or up to 1,000 replicates (whichever first).
 7. `Rscript go_enrichment.R` runs a GO term enrichment of high copy-number HOGs using [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html).
