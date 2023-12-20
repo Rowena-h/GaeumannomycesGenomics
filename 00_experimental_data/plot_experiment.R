@@ -19,20 +19,24 @@ df.pot.sum <- df.pot %>%
 
 #Recode treatments with strain codes
 df.sum <- bind_rows(df.plant.sum, df.pot.sum) %>%
-  mutate(Treatment.name=recode(Treatment,
-                               A="Control",
-                               B="Gt-19d1",
-                               C="Gt-8d",
-                               E="Gt-4e",
-                               F="Gt-23d",
-                               G="Gt14LH10")) %>%
-  mutate(type=recode(Treatment,
-                     A="Control",
-                     B="Type A",
-                     C="Type A",
-                     E="Type B",
-                     F="Type B",
-                     G="Type B"))
+  mutate(
+    Treatment.name=factor(recode(Treatment,
+                                 A="Control",
+                                 B="Gt-19d1",
+                                 C="Gt-8d",
+                                 E="Gt-4e",
+                                 F="Gt-23d",
+                                 G="Gt-LH10"),
+                          levels=c("Control", "Gt-19d1", "Gt-8d",
+                                   "Gt-23d", "Gt-4e", "Gt-LH10")),
+    type=recode(Treatment,
+                A="Control",
+                B="Type A",
+                C="Type A",
+                E="Type B",
+                F="Type B",
+                G="Type B")
+  )
 
 #Check for normality of residuals
 for (i in unique(df.sum$test)) {
