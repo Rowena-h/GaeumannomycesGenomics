@@ -111,8 +111,9 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 3. `sbatch 003_gc.sh` calculates GC content in 100,000 bp windows across each genome using [bedtools](https://github.com/arq5x/bedtools2).
 4. `sbatch -a 1-9 004_RIP.sh` calculates the composite RIP index (CRI) across each genomes using [this perl script](https://github.com/hyphaltip/fungaltools/tree/master/scripts).
 5. `sbatch -a 1-9 005_agp_prep.sh` prepares preliminary AGP files to inform the arrangement of contigs into chromosomes.
-6. `sbatch -a 1-9 006_agptools.sh` creates new gapped fasta files ready for NCBI submission from manually curated AGP files.
-7. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
+6. `sbatch -a 1-9 006_agptools.sh` creates new gapped fasta files from manually curated AGP files and updates annotation gff3 files accordingly. Calls `label_variants.R` to label alternatively spliced genes in the gff3.
+7. `sbatch -a 1-9 007_table2asn.sh` produces `.sqn` files combining the assembly and annotation for NCBI submission. Requires `ncbi_template.sbt` downloaded from [here](https://submit.ncbi.nlm.nih.gov/genbank/template/submission/).
+8. Scripts to plot figures: `plot_genespace.R`, `plot_read_coverage.R`
 
 ## 7 Comparative genomics
 
