@@ -70,3 +70,6 @@ awk 'BEGIN{ FS = OFS = "\t" } FNR==NR{a[NR]=$1;b[NR]=$2;c[NR]=$3;next}{$1=a[FNR]
 	tmp${strain}invertedmerged.bed tmp${strain}inverted.gff > ${out_dir}/${strain}_merged.gff3
 
 rm tmp${strain}invertedmerged.bed tmp${strain}inverted.gff tmp${strain}inverted.bed tmp${strain}.gff
+
+#Label alternatively spliced genes
+Rscript label_variants.R ${outdir}/${strain}_merged.gff3 ${strain}_merged_variants ${outdir}
