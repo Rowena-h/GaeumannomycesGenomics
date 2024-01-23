@@ -226,7 +226,7 @@ for (i in 1:length(colnames(bgc.abundance.mat.gt))) {
 ## CSEPs/CAZymes ##
 
 #Read in orthogroup data
-load(paste0(dir.comp, "orthogroup-matrices-2023-07-25.RData"))
+load(paste0(dir.comp, "orthogroup-matrices-2024-01-23.RData"))
 
 #Filter for only Gt strains
 orthogroups.count.gt <- orthogroups.count %>%
@@ -400,9 +400,14 @@ addUnits <- function(n) {
 #Plot bargraphs of number of genes
 gg.gene.numbers <- ggplot(genes.df, aes(y=tip, x=value, fill=category)) +
   facet_wrap(. ~ variable, scales="free_x", nrow=1,
-             labeller=labeller(variable=c(CSEPs="CSEPs", CAZymes="CAZymes", BGCs="BGCs", orthogroups="All genes"))) +
+             labeller=labeller(variable=c(CSEPs="CSEPs",
+                                          CAZymes="CAZymes",
+                                          BGCs="BGCs",
+                                          orthogroups="All genes"))) +
   geom_bar(stat="identity", linewidth=0.5, width=0.6) +
-  geom_label(data=genes.df %>% group_by(tip, variable) %>% summarise(total=sum(na.omit(value))) %>% filter(total != 0),
+  geom_label(data=genes.df %>%
+               group_by(tip, variable) %>%
+               summarise(total=sum(na.omit(value))) %>% filter(total != 0),
              aes(x=total, y=tip, label=comma(total)), 
              position=position_stack(vjust=0.5),
              size=1.5,

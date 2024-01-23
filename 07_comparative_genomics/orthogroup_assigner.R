@@ -40,10 +40,10 @@ for (strain in colnames(orthogroups)) {
   
   #Read in CAZyme predictions
   CAZymes <- read.table(
-    paste0("S:/functional_annotation/001_run_dbcan/", strain, "/overview.txt"),
+    paste0("S:/functional_annotation/002_run_dbcan/", strain, "/overview.txt"),
     sep="\t", header=TRUE,
     comment.char=""
-  )
+  ) %>% filter(X.ofTools == 3)
   
   #Read in AHRD tables
   AHRD <- read.table(
@@ -427,7 +427,7 @@ save(orthogroups,
      CSEP.count,
      CAZyme.count,
      AHRD.list,
-     file=paste0("orthogroup-matrices-", Sys.Date(), ".RData"))
+     file=paste0("R:/GaeumannomycesGenomics/07_comparative_genomics/orthogroup-matrices-", Sys.Date(), ".RData"))
 
 write.csv(
   file=paste0(
