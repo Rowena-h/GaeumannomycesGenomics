@@ -3,7 +3,7 @@
 ![Workflow schematic](schematic.png)
 
 Bioinformatics workflow for:
-> Hill et al. (submitted) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*
+> Hill et al. (2024) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*. biorxiv. [doi:10.1101/2024.02.15.580261](https://www.biorxiv.org/content/10.1101/2024.02.15.580261v1)
 
 The pipeline was written for and run on Norwich BioScience Institutes' HPC cluster which uses the SLURM batch-queue system. This means that many of the bash scripts (`.sh` file endings) specify core allocation, run times and memory usage allocation that may need to be adapted for different platforms.
 
@@ -130,4 +130,4 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 ## Citation
 
-> pending
+> Hill et al. (2024) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*. biorxiv. [doi:10.1101/2024.02.15.580261](https://www.biorxiv.org/content/10.1101/2024.02.15.580261v1)
