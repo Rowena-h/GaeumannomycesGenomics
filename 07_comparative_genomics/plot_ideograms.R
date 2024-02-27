@@ -414,7 +414,7 @@ for (i in 1:length(strains$strain)) {
     filter(seqnames %in% synteny$contig[synteny$strain == strains$file2[i]]) %>%
     left_join(df.fragments.cumulative, by="seqnames") %>%
     mutate(plot.xmin=ifelse(start2==1, start.x, start.x+start2),
-           plot.xmax=ifelse(end2==1, end.x, end.x+start2))
+           plot.xmax=ifelse(start2==1, end.x, end.x+start2))
   
   #Summarise gene density for 100,000 bp windows of each fragment
   df.genes.split <- df.genes %>%
@@ -581,7 +581,7 @@ for (i in 1:length(strains$strain)) {
     select(seqnames, start, end, CRI) %>%
     left_join(df.fragments.cumulative, by="seqnames") %>%
     mutate(plot.xmin=ifelse(start2==1, start.x, start.x+start2),
-           plot.xmax=ifelse(end2==1, end.x, end.x+start2))
+           plot.xmax=ifelse(start2==1, end.x, end.x+start2))
   
   #Get tandem positions
   df.tandems <- get(paste0("df.tandems.", strains$strain[i])) %>%
