@@ -3,7 +3,7 @@ args=commandArgs(trailingOnly=TRUE)
 
 #Test if there are three arguments: if not, return an error
 if (length(args)<3) {
-  stop("Three arguments must be supplied: a gff3 file, and output prefix and the directory to save the edited gff3 to.", call.=FALSE)
+  stop("Three arguments must be supplied: a gff3 file, an output prefix and the directory to save the edited gff3 to.", call.=FALSE)
 }
 
 library(tidyverse)
@@ -31,7 +31,7 @@ gff.variant.note <- gff.id %>%
   ))
 
 #Write to file
-cat("##gff-version 3\n", file=paste0(args[3], args[2], ".gff3"))
+cat("##gff-version 3\n", file=paste0(args[3], "/", args[2], ".gff3"))
 write.table(
   gff.variant.note[,1:9],
   paste0(args[3], "/", args[2], ".gff3"),
