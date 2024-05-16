@@ -10,15 +10,15 @@
 for group in orthogroup CSEP CAZyme BGC
 do
 
-	out_dir=lifestyle_permanova/${group}
+	out_dir=lifestyle_permanova
 
 	#Make output directory
-	mkdir -p ${out_dir}
+	mkdir -p ${out_dir}/${group}
 
 	singularity exec ~/programmes/gene_comparison/gene_comparison-230412.img python run_edited.py \
-		-i ${group}_abundance_matrix.csv \
-		-t species_tree_ingroup.tre \
+		-i ${out_dir}/${group}_abundance_matrix.csv \
+		-t ${out_dir}/species_tree_ingroup.tre \
 		--colors nonpathogen:#009E73,pathogen:#696969 \
-		-o ${out_dir}
+		-o ${out_dir}/${group}
 
 done
