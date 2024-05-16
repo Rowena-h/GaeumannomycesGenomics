@@ -20,6 +20,10 @@ orthogroups <- rbind(orthogroups, unassigned)
 orthogroups <- orthogroups[,-which(colnames(orthogroups) == "Magpoae")]
 orthogroups <- orthogroups[apply(orthogroups, 1, function(x) any(x != "")), ]
 
+#Remove mitochondrial orthogroups
+orthogroups <- orthogroups[-which(rownames(orthogroups) %in%
+                                    c("N0.HOG0009950", "N0.HOG0010458")),]
+
 #Fix column names
 colnames(orthogroups) <- c("Gh-1B17", "Gh-2C17", "Gt14LH10", "Gt-19d1",
                            "Gt-23d", "Gt-3aA1", "Gt-4e", "Gt-8d", "Gt-CB1")
@@ -437,11 +441,11 @@ write.csv(
 
 #Write abundance matrix files for lifestyle PERMANOVA testing
 write.csv(
-  file="R:/GaeumannomycesGenomics/07_comparative_genomics/orthogroup-count.csv",
+  file="R:/GaeumannomycesGenomics/07_comparative_genomics/lifestyle_permanova/orthogroup-count.csv",
   orthogroups.count, quote=FALSE)
 write.csv(
-  file="R:/GaeumannomycesGenomics/07_comparative_genomics/CAZyme-count.csv",
+  file="R:/GaeumannomycesGenomics/07_comparative_genomics/lifestyle_permanova/CAZyme-count.csv",
   CAZyme.count, quote=FALSE)
 write.csv(
-  file="R:/GaeumannomycesGenomics/07_comparative_genomics/CSEP-count.csv",
+  file="R:/GaeumannomycesGenomics/07_comparative_genomics/lifestyle_permanova/CSEP-count.csv",
   CSEP.count)
