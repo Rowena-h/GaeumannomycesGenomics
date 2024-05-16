@@ -127,18 +127,25 @@ gg.tree <- gg.tree +
 ################################################################################
 
 #For all types of genes...
-for (i in c("orthogroup", "CSEP", "CAZyme", "BGC")){
+for (group in c("orthogroup", "CSEP", "CAZyme", "BGC")){
   
-  print(i)
+  print(group)
   lifestyle.data <- read.csv(
-    paste0(dir.comp, "lifestyle_permanova/", i, "/data.csv"),
+    paste0(dir.comp, "lifestyle_permanova/", group, "/data.csv"),
     row.names="genome"
   )
   #Make distance matrix of orthogroup content
   dist <- vegdist(lifestyle.data, method="jaccard")
-  #Read in lifestyle test results
+  #Do permdisp
+  groups <- metadata$lifestyle[match(rownames(lifestyle.data), metadata$strain)]
+  disp <- betadisper(dist, groups)
+  disp.anova <- anova(disp)
+  
+  print(paste0("PERMDISP: ", round(disp.anova$`Pr(>F)`[1], 3)))
+  
+  #Read in phylogenetic PCA results
   phy.pca.result <- read.csv(
-    paste0(dir.comp, "lifestyle_permanova/", i, "/metadata.csv")
+    paste0(dir.comp, "lifestyle_permanova/", group, "/metadata.csv")
   )
   #Do permanova
   permanova <- adonis2(formula=dist ~ PC1 + PC2 + lifestyle,
@@ -148,8 +155,7 @@ for (i in c("orthogroup", "CSEP", "CAZyme", "BGC")){
   print(paste0("Phylogeny: ", round(sum(permanova$R2[1:2]) * 100), "%"))
   print(paste0("Lifestyle: ", round(sum(permanova$R2[3]) * 100), "%"))
   
-  assign(paste0("permanova.", i), permanova)
-  assign(paste0("phy.pca.result.", i), phy.pca.result)
+  assign(paste0("permanova.", group), permanova)
   
 }
 
@@ -226,7 +232,7 @@ for (i in 1:length(colnames(bgc.abundance.mat.gt))) {
 ## CSEPs/CAZymes ##
 
 #Read in orthogroup data
-load(paste0(dir.comp, "orthogroup-matrices-2024-01-23.RData"))
+load(paste0(dir.comp, "orthogroup-matrices-2024-05-16.RData"))
 
 #Filter for only Gt strains
 orthogroups.count.gt <- orthogroups.count %>%
@@ -716,7 +722,7 @@ gg.tree2 <- gg.tree +
            size=2) +
   annotate(geom="label",
            label=paste0("Phylogeny: ", round(sum(permanova.orthogroup$R2[1:2]) * 100), "%\n",
-                        "Lifestyle: ", round(sum(permanova$R2[3]) * 100), "%"),
+                        "Lifestyle: ", round(sum(permanova.orthogroup$R2[3]) * 100), "%"),
            x=0.03,
            y=10,
            size=2) +
@@ -1089,6 +1095,33 @@ repeats.df <- bind_rows(mget(paste0(metadata %>%
 #Add empty row for outgroup
 repeats.df <- bind_rows(repeats.df, data.frame(tip=metadata$tip[metadata$clade == "outgroup"]))
 
+#Do lifestyle permanova
+lifestyle.repeat.data <- repeats.df %>%
+  ungroup() %>%
+  filter(family != "Tad1?") %>%
+  select(-class) %>%
+  pivot_wider(names_from=family,
+              values_from=num,
+              values_fill=0) %>%
+  column_to_rownames("tip")
+
+#Make distance matrix of orthogroup content
+dist <- vegdist(lifestyle.repeat.data, method="jaccard")
+#Do permdisp
+groups <- metadata$lifestyle[match(rownames(lifestyle.repeat.data), metadata$tip)]
+disp <- betadisper(dist, groups)
+disp.anova <- anova(disp)
+
+print(paste0("PERMDISP: ", round(disp.anova$`Pr(>F)`[1], 3)))
+
+#Do permanova
+permanova.repeats <- adonis2(formula=dist ~ PC1 + PC2 + lifestyle,
+                     data=phy.pca.result,
+                     permutations=9999)
+
+print(paste0("Phylogeny: ", round(sum(permanova.repeats$R2[1:2]) * 100), "%"))
+print(paste0("Lifestyle: ", round(sum(permanova.repeats$R2[3]) * 100), "%"))
+
 #Plot bargraph of number and classifcation of repeats
 gg.repeats <- ggplot(repeats.df, aes(y=tip, x=num, fill=class)) +
   geom_bar(stat="identity", linewidth=0.5, width=0.6) +
@@ -1112,16 +1145,30 @@ gg.repeats <- ggplot(repeats.df, aes(y=tip, x=num, fill=class)) +
         panel.grid.major.x=element_line(colour="white"),
         panel.grid.minor.x=element_line(colour="white"),
         panel.grid.major.y=element_blank(),
-        legend.position=c(-2, 0.8),
+        legend.position=c(-1.7, 0.8),
         legend.text=element_text(size=8, margin=margin(0, 5, 0, 0)),
         legend.key.size=unit(0.2, "cm"),
         legend.spacing.x=unit(0.1, "cm"),
         legend.title=element_blank())
 
+gg.tree.repeats <- gg.tree +
+  annotate(geom="text",
+           label="Repeat family variance\n(PERMANOVA)",
+           x=0.012,
+           y=9,
+           fontface="bold",
+           size=2.5) +
+  annotate(geom="label",
+           label=paste0("Phylogeny: ", round(sum(permanova.repeats$R2[1:2]) * 100), "%\n",
+                        "Lifestyle: ", round(sum(permanova.repeats$R2[3]) * 100), "%"),
+           x=0.012,
+           y=8,
+           size=2)
+
 #Write to file
 pdf(file=paste0(dir.comp, "gaeumannomyces_TEs-", Sys.Date(), ".pdf"), height=4, width=7)
 gg.repeats %>% 
-  insert_left(gg.tree, width=2.7)
+  insert_left(gg.tree.repeats, width=2.7)
 dev.off()
 
 ################################################################################
