@@ -4,16 +4,19 @@
 library(ape)
 library(tidyverse)
 
+#Directory paths
+dir.phylo <- "R:/GaeumannomycesGenomics/05_phylogenomics/"
+dir.comp <- "R:/GaeumannomycesGenomics/07_comparative_genomics/"
+
+
 #Read in metadata
-metadata <- read.csv(paste0("../05_phylogenomics/raxmlng/metadata.csv"))
+metadata <- read.csv(paste0(dir.phylo, "raxmlng/metadata.csv"))
 
 
 ## Format species tree ##
 
 #Read in tree
-tree <- read.tree(
-  paste0("../05_phylogenomics/raxmlng/gaeumannomyces_concat.raxml.support")
-)
+tree <- read.tree(paste0(dir.phylo, "raxmlng/gaeumannomyces_concat.raxml.support"))
 tree$tip.label <- sub("_EIv1", "", tree$tip.label)
 
 #Remove outgroup from tree and write to file
@@ -22,7 +25,8 @@ tree <- root(tree, outgroups, edgelabel=TRUE, resolve.root=TRUE)
 tree.ingroup <- drop.tip(
   tree, c(outgroups, "GCF_000145635.1_Gae_graminis_V2_protein.faa_XP")
 )
-write.tree(tree.ingroup, "species_tree_ingroup.tre")
+write.tree(tree.ingroup,
+           paste0(dir.comp, "lifestyle_permanova/species_tree_ingroup.tre"))
 
 
 ## Format gene abundance matrices ##
@@ -31,7 +35,7 @@ write.tree(tree.ingroup, "species_tree_ingroup.tre")
 for (gene in c("orthogroup", "CAZyme", "CSEP")) {
   
   #Read in abundance matrix
-  matrix <- read.csv(paste0(gene, "-count.csv")) %>%
+  matrix <- read.csv(paste0(dir.comp, "lifestyle_permanova/", gene, "-count.csv")) %>%
     column_to_rownames(var="X") %>%
     filter(rowSums(across())>0)
   
@@ -51,7 +55,8 @@ for (gene in c("orthogroup", "CAZyme", "CSEP")) {
     select(genome, lifestyle, everything())
   
   #Write to file
-  write.csv(matrix, paste0(gene, "_abundance_matrix.csv"),
+  write.csv(matrix,
+            paste0(dir.comp, "lifestyle_permanova/", gene, "_abundance_matrix.csv"),
             row.names=FALSE, quote=FALSE)
   
 }
@@ -97,7 +102,8 @@ bgc.matrix <- bgc.matrix %>%
   select(genome, lifestyle, everything())
 
 #Write to file
-write.csv(bgc.matrix, "BGC_abundance_matrix.csv",
+write.csv(bgc.matrix, 
+          paste0(dir.comp, "lifestyle_permanova/BGC_abundance_matrix.csv"),
           row.names=FALSE, quote=FALSE)
 
 #Submit test
