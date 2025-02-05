@@ -27,7 +27,7 @@ df.sum <- bind_rows(df.plant.sum, df.pot.sum) %>%
                                  E="Gt-4e",
                                  F="Gt-23d",
                                  G="Gt-LH10"),
-                          levels=c("Control", "Gt-19d1", "Gt-8d",
+                          levels=c("Control", "Gt-8d", "Gt-19d1", 
                                    "Gt-23d", "Gt-4e", "Gt-LH10")),
     type=recode(Treatment,
                 A="Control",
@@ -80,7 +80,11 @@ for (i in 1:length(unique(df.significance$test))) {
                                                     "-", tmp$group2)))$Letters)
   )
   
-  assign(paste0("df.letters.tmp.", i), letters)
+  if (length(unique(letters$tukey)) > 1) {
+   
+    assign(paste0("df.letters.tmp.", i), letters) 
+    
+  }
   
 }
 
@@ -98,21 +102,21 @@ test.names <-
     Number.of.roots="Number of roots",
     Roots.per.tiller="Number of roots per tiller",
     Root.length.cm="Mean root length (cm)",
-    Average.dried.root.biomass.per.plant.g="Mean dried root biomass per plant (g)",
+    Average.dried.root.biomass.per.plant.g="Mean dried root\nbiomass per plant (g)",
     TAI="Take-all index (TAI)")
 
 #Plot box and violin plots for all characteristics
 gg.pots <- ggplot(df.sum, aes(x=Treatment.name, y=value)) +
   facet_wrap(~ factor(
     test,
-    levels=c(c("TAI", "Height.cm", 
-               "Number.of.roots", "Ear.length.cm",
-               "Roots.per.tiller", "Flag.Leaf.Length.cm",
-               "Root.length.cm", "Number.of.ears",
-               "Average.dried.root.biomass.per.plant.g", "Number.of.tillers"))
+    levels=c(c("TAI", "Number.of.roots",
+               "Roots.per.tiller", "Root.length.cm",
+               "Average.dried.root.biomass.per.plant.g", "Height.cm", 
+                "Ear.length.cm", "Flag.Leaf.Length.cm",
+                "Number.of.ears", "Number.of.tillers"))
   ),
   scales="free_y",
-  ncol=2,
+  ncol=5,
   labeller=as_labeller(test.names)) +
   geom_violin(aes(fill=type),
               linewidth=0.3,
@@ -123,25 +127,28 @@ gg.pots <- ggplot(df.sum, aes(x=Treatment.name, y=value)) +
                width=0.1) +
   geom_text(data=df.significance.letters,
             aes(x=Treatment.name, y=Inf, label=tukey),
-            vjust=1,
+            vjust=1.5,
             size=2) +
   scale_y_continuous(limits=c(0,NA),
                      expand=expansion(mult=c(0, 0.2))) +
   scale_fill_manual(values=c("grey", "#E69F00", "#f5d896")) +
   theme(legend.position="top",
         legend.title=element_blank(),
+        legend.key=element_blank(),
+        legend.margin=margin(0, 0, 0, 0),
         legend.direction="horizontal",
         axis.title=element_blank(),
         axis.text=element_text(size=5),
         axis.text.x=element_text(angle=90, vjust=0.5, hjust=1),
-        strip.text=element_text(size=5, face="bold"))
+        strip.text=element_text(size=5, face="bold"),
+        plot.margin=margin(5.5, 5.5, 5.5, 30))
 
 #Write to file
 pdf(file=paste0("R:/GaeumannomycesGenomics/00_experimental_data/pot_experiment-", Sys.Date(), ".pdf"),
-     height=6, width=3.5)
+     height=3, width=7.5)
 ggarrange(
   ggdraw(gg.pots) + 
-    draw_label("Above-ground", size=8, fontface="bold", x=0.76, y=0.915) + 
-    draw_label("Below-ground", size=8, fontface="bold", x=0.28, y=0.915),
+    draw_label("Above-ground", size=8, angle=90, fontface="bold", x=0.03, y=0.3) + 
+    draw_label("Below-ground", size=8, angle=90, fontface="bold", x=0.03, y=0.67),
   labels="c")
 dev.off()
