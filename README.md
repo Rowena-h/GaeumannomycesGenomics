@@ -121,7 +121,7 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 1. `sbatch 001_orthogroup_assignment.sh` submits `orthogroup_assigner.R` which makes abundance matrices of HOGs from OrthoFinder.
 2. `sbatch 002_big-scape.sh` predicts biosynthetic gene clusters (BGCs) from earlier antiSMASH output using [BiG-SCAPE](https://github.com/medema-group/BiG-SCAPE).
-3. `sbatch 003_clinker.sh` uses [clinker](https://github.com/gamcil/clinker) to align and visualises BGCs in the `bgc_gbks` directory which contains antiSMASH gbk files for clusters found to be in the same family by BiG-SCAPE and a reference from the [MiBIG](https://mibig.secondarymetabolites.org/) reposity.
+3. `sbatch 003_clinker.sh` uses [clinker](https://github.com/gamcil/clinker) to align and visualise BGCs in the `bgc_gbks` directory which contains antiSMASH gbk files for clusters found to be in the same family by BiG-SCAPE and a reference from the [MiBIG](https://mibig.secondarymetabolites.org/) reposity.
 4. `sbatch 004_lifestyle_test.sh` submits `lifestyle_v_phylogeny.R` which prepares input files and submits `permanova.sh`, a PERMANOVA-based test comparing the effect of phylogeny versus lifestyle on gene variance. `run_edited.py` is modified from the original script `run.py` by [Mesny &amp; Vannier](https://github.com/fantin-mesny/Effect-Of-Biological-Categories-On-Genomes-Composition).
 5. `sbatch 005_starfish.sh` predicts *Starship* giant mobile elements using [starfish](https://github.com/egluckthaler/starfish).
 6. `sbatch 006_align_tyr.sh` aligns tyrosine recombinase genes predicted by starfish using MAFFT and trims alignments using [trimAl](https://github.com/inab/trimal).
