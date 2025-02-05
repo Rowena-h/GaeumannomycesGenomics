@@ -28,4 +28,4 @@ sed "s/STRAIN/${biosample}/" ncbi_template.sbt > ${out_dir}/${new_strain}_templa
         -i ${assembly} \
         -f ../results/ncbi_submission/${strain}/${strain}_merged_variants_hc.gff3 \
         -o ${out_dir}/${new_strain}.sqn \
-        -M n -V b -Z
+        -M n -V b -Z -c w
