@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p ei-medium                     	# queue
+#SBATCH -p ei-short                     	# queue
 #SBATCH -N 1                            	# number of nodes
 #SBATCH -c 6                            	# number of cores
 #SBATCH --mem 150000	                     	# memory pool for all cores
@@ -12,7 +12,7 @@ out_dir=../scratch/functional_annotation/002.5_big-scape/gaeumannomyces
 #Make output directory
 mkdir -p ${out_dir}
 
-strains=$(awk '{printf "%s%s",sep,$1; sep=" "} END{print ""}' ../strains)
+strains=$(awk '{printf "%s%s",sep,$1; sep="_EI_v1.1 "} END{print "_EI_v1.1"}' ../strains)
 
 singularity exec ~/programmes/big-scape/big-scape.img python /usr/src/BiG-SCAPE/bigscape.py \
 	-i ../scratch/functional_annotation/002_antismash \
