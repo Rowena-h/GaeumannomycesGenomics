@@ -73,11 +73,7 @@ bgc.df <- read.csv(
 )
 
 bgc.clusters.df <- do.call("rbind", lapply(
-  c(Sys.glob(paste0(bgc.dir, "network_files/*/PKSI/PKSI_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/NRPS/NRPS_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/PKS-NRP_Hybrids/PKS-NRP_Hybrids_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/PKSother/PKSother_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/Terpene/Terpene_clustering_c0.30.tsv"))),
+  Sys.glob(paste0(bgc.dir, "network_files/*/*/*_clustering_c0.30.tsv")),
   function(fn) 
     data.frame(read.csv(fn, sep="\t", header=TRUE))
 ))
@@ -86,7 +82,8 @@ bgc.clusters.df <- do.call("rbind", lapply(
 bgc.matrix <- bgc.clusters.df %>%
   rename(BGC="X.BGC.Name") %>%
   inner_join(bgc.df) %>%
-  mutate(taxon=sub("_EI_v1.1.*", "", Accession.ID)) %>%
+  mutate(taxon=sub("_.*", "", BGC),
+         taxon=metadata$strain[match(taxon, metadata$new.strain)]) %>%
   group_by(taxon, Family.Number) %>%
   summarise(num=n()) %>%
   pivot_wider(names_from=Family.Number,
