@@ -3,6 +3,7 @@ library(tidyverse)    #2.0.0
 library(ape)          #5.7-1
 library(aplot)        #0.2.2
 library(eulerr)       #7.0.0
+library(ggh4x)        #0.2.8
 library(ggplotify)    #0.1.2
 library(ggpubr)       #0.6.0
 library(ggtree)       #3.9.1
@@ -167,24 +168,26 @@ for (group in c("orthogroup", "CSEP", "CAZyme", "BGC")){
 ## BGCS ##
 
 #Read in BiG-SCAPE results
-bgc.dir <- "S:/functional_annotation/002.5_big-scape/gaeumannomyces/"
-bgc.df <- read.csv(Sys.glob(paste0(bgc.dir, "network_files/*/Network_Annotations_Full.tsv")), sep="\t", header=TRUE)
+bgc.dir <- "S:/functional_annotation/002.5_big-scape/gaeumannomyces_curated/"
+bgc.df <- read.csv(
+  Sys.glob(paste0(bgc.dir, "network_files/*/Network_Annotations_Full.tsv")),
+  sep="\t", header=TRUE
+  )
 
 bgc.clusters.df <- do.call("rbind", lapply(
-  c(Sys.glob(paste0(bgc.dir, "network_files/*/PKSI/PKSI_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/NRPS/NRPS_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/PKS-NRP_Hybrids/PKS-NRP_Hybrids_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/PKSother/PKSother_clustering_c0.30.tsv")),
-    Sys.glob(paste0(bgc.dir, "network_files/*/Terpene/Terpene_clustering_c0.30.tsv"))),
+  Sys.glob(paste0(bgc.dir, "network_files/*/*/*_clustering_c0.30.tsv")),
   function(fn) 
     data.frame(read.csv(fn, sep="\t", header=TRUE))
-))
+)) %>%
+  distinct()
+  
 
 #Summarise abundance of BGC families
 bgc.num.df <- bgc.clusters.df %>%
   dplyr::rename(BGC="X.BGC.Name") %>%
   inner_join(bgc.df) %>%
-  mutate(strain=sub("_EI_v1.1.*", "", Accession.ID)) %>%
+  mutate(new.strain=sub("_.*", "", BGC),
+         strain=metadata$strain[match(new.strain, metadata$new.strain)]) %>%
   group_by(strain, Family.Number) %>%
   summarise(num=n())
 
@@ -216,12 +219,8 @@ for (i in 1:length(colnames(bgc.abundance.mat.gt))) {
     bgc.num.df.gt$category[bgc.num.df.gt$Family.Number == colnames(bgc.abundance.mat.gt)[i]] <-
       "core"
   }
-  if (length(which(bgc.abundance.mat.gt[,i] > 0)) == (length(rownames(bgc.abundance.mat.gt)) - 1)) {
-    bgc.num.df.gt$category[bgc.num.df.gt$Family.Number == colnames(bgc.abundance.mat.gt)[i]] <-
-      "softcore"
-  }
   if (length(which(bgc.abundance.mat.gt[,i] == 0)) < (length(rownames(bgc.abundance.mat.gt)) - 1) &&
-      length(which(bgc.abundance.mat.gt[,i] == 0)) > 1) {
+      length(which(bgc.abundance.mat.gt[,i] == 0)) > 0) {
     bgc.num.df.gt$category[bgc.num.df.gt$Family.Number == colnames(bgc.abundance.mat.gt)[i]] <-
       "accessory"
   }
@@ -276,12 +275,8 @@ for (i in 1:length(rownames(orthogroups.count.gt))) {
     orthogroups.stats.gt$category[orthogroups.stats.gt$orthogroup == rownames(orthogroups.count.gt)[i]] <-
       "core"
   }
-  if (length(which(orthogroups.count.gt[i,] > 0)) == (length(colnames(orthogroups.count.gt)) - 1)) {
-    orthogroups.stats.gt$category[orthogroups.stats.gt$orthogroup == rownames(orthogroups.count.gt)[i]] <-
-      "softcore"
-  }
   if (length(which(orthogroups.count.gt[i,] == 0)) < (length(colnames(orthogroups.count.gt)) - 1) &&
-      length(which(orthogroups.count.gt[i,] == 0)) > 1) {
+      length(which(orthogroups.count.gt[i,] == 0)) > 0) {
     orthogroups.stats.gt$category[orthogroups.stats.gt$orthogroup == rownames(orthogroups.count.gt)[i]] <-
       "accessory"
   }
@@ -289,8 +284,8 @@ for (i in 1:length(rownames(orthogroups.count.gt))) {
 close(progress.bar)
 
 #Make dataframe summarising Gt gene content
-genes.df.gt <- data.frame(strain=rep(colnames(orthogroups.count.gt), each=4), 
-                          category=rep(c("specific", "accessory", "softcore", "core"),
+genes.df.gt <- data.frame(strain=rep(colnames(orthogroups.count.gt), each=3), 
+                          category=rep(c("specific", "accessory", "core"),
                                        length(colnames(orthogroups.count.gt))),
                           orthogroups=NA,
                           CSEPs=NA,
@@ -336,7 +331,7 @@ genes.df.gt <- genes.df.gt %>%
 genes.df.gt %>%
   filter(variable == "orthogroups") %>%
   group_by(strain) %>% spread(category, value) %>%
-  mutate(total=core+softcore+accessory+specific) %>%
+  mutate(total=core+accessory+specific) %>%
   summarise(core/total)
 
 #Summarise non-Gt gene content
@@ -384,7 +379,7 @@ genes.df.other <- bind_rows(
 
 #Combine Gt and non-Gt gene content
 genes.df <- bind_rows(genes.df.gt, genes.df.other) %>%
-  mutate(category=factor(category, levels=c("specific", "accessory", "softcore", "core")),
+  mutate(category=factor(category, levels=c("specific", "accessory", "core")),
          tip=metadata$tip[match(strain, metadata$strain)])
 
 #Add empty outgroup rows
@@ -426,10 +421,10 @@ gg.gene.numbers <- ggplot(genes.df, aes(y=tip, x=value, fill=category)) +
   scale_x_continuous(expand=c(0, 0),
                      position="top",
                      labels=addUnits) +
-  scale_fill_manual(values=c("#F5D896", "#edb945", "#e69f00", "#a58337"),
+  scale_fill_manual(values=c("#F5D896", "#e69f00", "#a58337"),
                     #c("grey93", "lightgrey", "darkgrey", "dimgrey"),
-                    breaks=c("core", "softcore", "accessory", "specific"),
-                    labels=c("Core", "Soft-core", "Accessory", "Specific")) +
+                    breaks=c("core", "accessory", "specific"),
+                    labels=c("Core", "Accessory", "Specific")) +
   coord_cartesian(clip="off") +
   theme_minimal() +
   theme(strip.placement="outside",
@@ -442,7 +437,7 @@ gg.gene.numbers <- ggplot(genes.df, aes(y=tip, x=value, fill=category)) +
         panel.grid.minor.x=element_blank(),
         panel.grid.major.y=element_blank(),
         legend.position=c(-0.7, 1.04),
-        legend.text=element_text(size=6, margin=margin(0, 5, 0, 0)),
+        legend.text=element_text(size=6, margin=margin(0, 5, 0, 2)),
         legend.key.size=unit(0.2, "cm"),
         legend.spacing.x=unit(0.1, "cm"),
         legend.title=element_blank())
@@ -462,7 +457,7 @@ copynum.df <- data.frame(strain=colnames(orthogroups.count),
         orthogroups.stats.gt$category[
           match(hog,
                 orthogroups.stats.gt$orthogroup)]),
-    levels=c("specific", "accessory", "softcore", "core")),
+    levels=c("specific", "accessory", "core")),
     tip=metadata$tip[match(strain, metadata$strain)])
 
 #Plot jittered scatterplot of gene copynumber
@@ -473,14 +468,14 @@ gg.copynum <- ggplot(copynum.df, aes(x=num, y=tip, colour=category)) +
                      breaks=pretty_breaks(),
                      expand=c(0, 0),
                      position="top") +
-  scale_colour_manual(values=c("#F5D896", "#edb945", "#e69f00", "#a58337"),
-                      breaks=c("core", "softcore", "accessory", "specific"),
-                      labels=c("Core", "Soft-core", "Accessory", "Specific")) +
+  scale_colour_manual(values=c("#F5D896", "#e69f00", "#a58337"),
+                      breaks=c("core", "accessory", "specific"),
+                      labels=c("Core", "Accessory", "Specific")) +
   labs(x="Gene copy\nnumber") +
   theme_minimal() +
   theme(legend.position="none",
-        axis.title.x.top=element_text(size=7, vjust=-6, face="bold"),
-        axis.text.x.top=element_text(size=6, vjust=-6),
+        axis.title.x.top=element_text(size=7, vjust=-1, face="bold"),
+        axis.text.x.top=element_text(size=6, vjust=-1),
         axis.text.y=element_blank(),
         axis.title.y=element_blank(),
         panel.grid.major.x=element_line(colour="white"),
@@ -580,8 +575,8 @@ gg.euler <- as_ggplot(euler.legend) +
   annotation_custom(euler.grob, xmin=0.25, xmax=Inf, ymin=-Inf, ymax=0.95)
 
 #Write table of HCNs for GO enrichment analysis
-write.table(file="copynum_hogs.tsv", data.frame(unique(hcn.df$hog)),
-            col.names=FALSE, quote=FALSE, row.names=FALSE)
+# write.table(file="copynum_hogs.tsv", data.frame(unique(hcn.df$hog)),
+#             col.names=FALSE, quote=FALSE, row.names=FALSE)
 
 
 ## Gt pangenome accumulation curves ##
@@ -657,9 +652,6 @@ gg.accumulation <- ggplot(accumulation.df, aes(x=genomes, y=mean)) +
   geom_ribbon(aes(ymin=mean-sd, ymax=mean+sd, group=type),
               alpha=0.2, show.legend=FALSE) +
   geom_line(aes(linetype=type), linewidth=0.5) +
-  # geom_smooth(method="lm", formula = y ~ I(log(x)),
-  #             colour="black", se=FALSE,
-  #             linewidth=0.5) +
   geom_point(size=0.5) +
   annotate(geom="text",
            x=4.8,
@@ -688,7 +680,7 @@ gg.accumulation <- ggplot(accumulation.df, aes(x=genomes, y=mean)) +
         legend.title=element_blank(),
         panel.grid.minor.x=element_blank(),
         legend.key.size=unit(8, "pt"),
-        legend.text=element_text(size=7, margin=margin(0, 5, 0, 0)),
+        legend.text=element_text(size=7, margin=margin(0, 0, 0, 5)),
         axis.title=element_text(size=7),
         axis.text=element_text(size=5))
 
@@ -725,6 +717,7 @@ gg.tree2 <- gg.tree +
                         "Lifestyle: ", round(sum(permanova.orthogroup$R2[3]) * 100), "%"),
            x=0.03,
            y=10,
+           label.padding=unit(0.5, "lines"),
            size=2) +
   annotate(geom="text",
            label="CSEPs",
@@ -737,6 +730,7 @@ gg.tree2 <- gg.tree +
                         "Lifestyle: ", round(sum(permanova.CSEP$R2[3]) * 100), "%"),
            x=0.03,
            y=9,
+           label.padding=unit(0.5, "lines"),
            size=2) +
   annotate(geom="text",
            label="CAZymes",
@@ -749,6 +743,7 @@ gg.tree2 <- gg.tree +
                         "Lifestyle: ", round(sum(permanova.CAZyme$R2[3]) * 100), "%"),
            x=0.03,
            y=8,
+           label.padding=unit(0.5, "lines"),
            size=2) +
   annotate(geom="text",
            label="BGCs",
@@ -761,6 +756,7 @@ gg.tree2 <- gg.tree +
                         "Lifestyle: ", round(sum(permanova.BGC$R2[3]) * 100), "%"),
            x=0.03,
            y=7,
+           label.padding=unit(0.5, "lines"),
            size=2)
 
 #Set separate legends for composite plots
@@ -774,11 +770,11 @@ gene.content.grob <- as.grob(
 )
 
 #Write to file
-pdf(file=paste0(dir.comp, "gaeumannomyces_genes-", Sys.Date(), ".pdf"), height=6, width=7)
+#pdf(file=paste0(dir.comp, "gaeumannomyces_genes-", Sys.Date(), ".pdf"), height=6, width=7)
 ggarrange(gene.content.grob,
           ggarrange(gg.accumulation, gg.euler, labels=c("", "c")),
           nrow=2, heights=c(2, 1), labels="auto")
-dev.off()
+#dev.off()
 
 
 ## Abundance matrix plots ##
@@ -853,8 +849,9 @@ for (i in 1:length(unique(CSEP.abundance.df$PHI.base_entry))) {
 #Split rows with more than one substrate and add tree tip labels
 CSEP.abundance.df <- CSEP.abundance.df %>%
   separate_rows(sep=",", phenotype) %>%
-  group_by(phenotype) %>%
-  complete(strain, name_label) %>%
+  complete(strain, name_label, phenotype) %>%
+  group_by(phenotype, name_label) %>%
+  filter(!all(is.na(num))) %>%
   mutate(tiplab=metadata$tip[match(strain, metadata$strain)],
          phenotype=sub("Effector \\(plant avirulence determinant\\)", "Effector", 
                        sub("Loss of pathogenicity", "Loss\npath", str_to_sentence(phenotype)))) %>%
@@ -876,8 +873,10 @@ gg.cseps <- ggplot(CSEP.abundance.df,
                    aes(x=name_label, y=tiplab, fill=num)) +
   facet_grid(. ~ phenotype, scales="free", space="free") +
   geom_tile(color="grey", linewidth=0.1) +
-  scale_fill_gradient(low="#F5D896", high="#a58337",
-                      breaks=pretty_breaks(),
+  scale_fill_gradient(low="white", high="dimgrey",
+                      breaks=function(x)
+                        unique(floor(pretty(seq(min(x), (max(x) + 1) * 1.1)))),
+                      limits=c(0, NA),
                       na.value="white",
                       guide=guide_colourbar(
                         title="CSEP copy-number",
@@ -891,7 +890,7 @@ gg.cseps <- ggplot(CSEP.abundance.df,
         legend.margin=margin(5, 0, -10, 0),
         legend.title=element_text(size=5, face="bold",
                                   margin=margin(0, 10, 0, 0)),
-        legend.text=element_text(size=3, margin=margin(0, 3, 0, 0)),
+        legend.text=element_text(size=3, margin=margin(2, 0, 0, 0)),
         legend.key.size=unit(6, "pt"),
         strip.text=element_text(size=4, face="bold",
                                 margin=margin(2, 0, 2, 0)),
@@ -952,9 +951,10 @@ gg.cazymes <- ggplot(CAZyme.abundance.df,
                      aes(x=CAZyme_family, y=tiplab, fill=count)) +
   facet_grid(. ~ substrate, scales="free", space="free") +
   geom_tile(color="grey", linewidth=0.1) +
-  # scale_x_discrete(labels=bold_labels_cseps) +
-  scale_fill_gradient(low="#F5D896", high="#a58337",
-                      breaks=pretty_breaks(),
+  scale_fill_gradient(low="white", high="dimgrey",
+                      breaks=function(x)
+                        unique(floor(pretty(seq(min(x), (max(x) + 1) * 1.1)))),
+                      limits=c(0, NA),
                       na.value="white",
                       guide=guide_colourbar(
                         title="Number of CAZymes",
@@ -968,7 +968,7 @@ gg.cazymes <- ggplot(CAZyme.abundance.df,
         legend.margin=margin(5, 0, -10, 0),
         legend.title=element_text(size=5, face="bold",
                                   margin=margin(0, 10, 0, 0)),
-        legend.text=element_text(size=3, margin=margin(0, 3, 0, 0)),
+        legend.text=element_text(size=3, margin=margin(2, 0, 0, 0)),
         legend.key.size=unit(6, "pt"),
         strip.text=element_text(size=4, face="bold",
                                 margin=margin(2, 0, 2, 0)),
@@ -992,7 +992,11 @@ bgc.abundance.df <- data.frame(t(bgc.abundance.mat %>%
   gather(strain, num, -cluster) %>%
   mutate(num=as.numeric(sub(0, NA, num)),
          class=bgc.classes.df$BiG.SCAPE.class[match(cluster, bgc.classes.df$Family.Number)],
-         tiplab=metadata$tip[match(sub("\\.", "-", strain), metadata$strain)]) %>%
+         product=bgc.classes.df$Product.Prediction[match(cluster, bgc.classes.df$Family.Number)],
+         product=sub("fungal-RiPP-like.*", "fungal-RiPP-like", product),
+         product=sub("NRPS-like.NRPS", "NRPS-like", product),
+         tiplab=metadata$tip[match(sub("\\.", "-", strain), metadata$strain)],
+         row=ifelse(class %in% c("NRPS", "Others", "PKSother"), 2, 1)) %>%
   select(tiplab, everything())
 
 #Make function for plot labels
@@ -1001,12 +1005,18 @@ bgc_label <- function(breaks) {
 }
 
 #Plot grid of BGCs
-gg.bgcs <- ggplot(bgc.abundance.df,
+gg.bgcs.1 <- ggplot(bgc.abundance.df %>% filter(row == 1),
                   aes(x=cluster, y=tiplab, fill=num)) +
-  facet_grid(. ~ class, scales="free", space="free") +
+  facet_nested(~class+product,
+               space="free", switch="y", scales="free",
+               nest_line=element_line(),
+               solo_line=TRUE,
+               strip=strip_nested(size="variable")) +
   geom_tile(color="grey", linewidth=0.1) +
-  scale_fill_gradient(low="#F5D896", high="#a58337",
-                      breaks=pretty_breaks(),
+  scale_fill_gradient(low="white", high="dimgrey",
+                      breaks=function(x)
+                        unique(floor(pretty(seq(min(x), (max(x) + 1) * 1.1)))),
+                      limits=c(0, NA),
                       na.value="white",
                       guide=guide_colourbar(
                         title="BGC copy-number",
@@ -1021,7 +1031,7 @@ gg.bgcs <- ggplot(bgc.abundance.df,
         legend.margin=margin(5, 0, -10, 0),
         legend.title=element_text(size=5, face="bold",
                                   margin=margin(0, 10, 0, 0)),
-        legend.text=element_text(size=3, margin=margin(0, 3, 0, 0)),
+        legend.text=element_text(size=3, margin=margin(2, 0, 0, 0)),
         legend.key.size=unit(6, "pt"),
         strip.text=element_text(size=4, face="bold",
                                 margin=margin(2, 0, 2, 0)),
@@ -1032,18 +1042,68 @@ gg.bgcs <- ggplot(bgc.abundance.df,
         axis.text.x=element_text(angle=90, hjust=1, vjust=0.5,
                                  size=3, margin=margin(-2, 0, 0, 0)))
 
+gg.bgcs.2 <- ggplot(bgc.abundance.df %>% filter(row == 2),
+                    aes(x=cluster, y=tiplab, fill=num)) +
+  facet_nested(~class+product,
+               space="free", switch="y", scales="free",
+               nest_line=element_line(),
+               solo_line=TRUE,
+               strip=strip_nested(size="variable", clip="off")) +
+  geom_tile(color="grey", linewidth=0.1) +
+  scale_fill_gradient(low="white", high="dimgrey",
+                      breaks=function(x)
+                        unique(floor(pretty(seq(min(x), (max(x) + 1) * 1.1)))),
+                      limits=c(0, NA),
+                      na.value="white",
+                      guide=guide_colourbar(
+                        title="BGC copy-number",
+                        title.position="left",
+                        direction="horizontal",
+                        title.hjust=0,
+                        title.vjust=0.8)) +
+  scale_x_discrete(labels=bgc_label) +
+  theme_minimal() +
+  theme(legend.position="none",
+        strip.text=element_text(size=4, face="bold",
+                                margin=margin(2, 0, 2, 0)),
+        panel.spacing=unit(0.3, "lines"),
+        panel.grid=element_blank(),
+        axis.text.y=element_blank(),
+        axis.title=element_blank(),
+        axis.text.x=element_text(angle=90, hjust=1, vjust=0.5,
+                                 size=3, margin=margin(-2, 0, 0, 0)))
+
 
 #Write to file
-pdf(file=paste0(dir.comp, "abundances-1-", Sys.Date(), ".pdf"), height=4.2, width=7)
+#pdf(file=paste0(dir.comp, "abundances-1-", Sys.Date(), ".pdf"), height=4.2, width=7)
 ggarrange(as.grob(gg.cazymes %>% insert_left(gg.skeleton.tree, width=0.27)),
           as.grob(gg.cseps %>% insert_left(gg.skeleton.tree, width=0.27)),
           labels="auto", nrow=2, heights=c(1, 1.1))
-dev.off()
+#dev.off()
 
-pdf(file=paste0(dir.comp, "abundances-2-", Sys.Date(), ".pdf"), height=1.8, width=7)
-ggarrange(as.grob(gg.bgcs %>% insert_left(gg.skeleton.tree, width=0.27)),
-          labels="c", nrow=1)
-dev.off()
+#pdf(file=paste0(dir.comp, "abundances-2-", Sys.Date(), ".pdf"), height=3.6, width=7)
+ggarrange(as.grob(gg.bgcs.1 %>% insert_left(gg.skeleton.tree, width=0.27)),
+          as.grob(gg.bgcs.2 %>% insert_left(gg.skeleton.tree, width=0.27)),
+          labels=c("c", ""), nrow=2, heights=c(1.2, 1))
+#dev.off()
+
+
+## BGCs ##
+
+bgc.annotations.df <- do.call("rbind", lapply(
+  Sys.glob(paste0(bgc.dir, "cache/pfd/*")),
+  function(fn) 
+    data.frame(read.csv(fn, sep="\t", header=FALSE))
+)) %>%
+  dplyr::rename(cluster=V1, score=V2, gene=V3, envelope.coordinate.from=V4,
+                envelope.coordinate.to=V5, pfam.id=V6, pfam.desc=V7,
+                start.gene=V8, end.gene=V9, CDS.header=V10)
+
+bgc.annotations.sum.df <- bgc.annotations.df %>%
+  mutate(feat_id=paste0(sub("-", "", bgc.annotations.df$gene), ".1"),
+         cluster.id=bgc.clusters.df$Family.Number[match(cluster, bgc.clusters.df$X.BGC.Name)]) %>%
+  group_by(cluster, cluster.id, feat_id) %>%
+  summarise(pfam.domains=paste(unique(pfam.desc), collapse = ";"))
 
 
 ################################################################################
@@ -1132,7 +1192,8 @@ gg.repeats <- ggplot(repeats.df, aes(y=tip, x=num, fill=class)) +
   scale_fill_manual(values=c("#88CCEE", "#44AA99", "#117733", "#332288",
                              "#DDCC77", "#999933","#CC6677",
                              "#882255", "#AA4499", "dimgrey"),
-                    labels=sub("_", " ", sort(unique(repeats.df$class)))) +
+                    labels=sub("_", " ", sort(unique(repeats.df$class))),
+                    na.translate=FALSE) +
   coord_cartesian(clip="off") +
   theme_minimal() +
   theme(strip.placement="outside",
@@ -1146,11 +1207,12 @@ gg.repeats <- ggplot(repeats.df, aes(y=tip, x=num, fill=class)) +
         panel.grid.minor.x=element_line(colour="white"),
         panel.grid.major.y=element_blank(),
         legend.position=c(-1.7, 0.8),
-        legend.text=element_text(size=8, margin=margin(0, 5, 0, 0)),
+        legend.text=element_text(size=8, margin=margin(0, 5, 0, 2)),
         legend.key.size=unit(0.2, "cm"),
         legend.spacing.x=unit(0.1, "cm"),
         legend.title=element_blank())
 
+#Add PERMANOVA
 gg.tree.repeats <- gg.tree +
   annotate(geom="text",
            label="Repeat family variance\n(PERMANOVA)",
@@ -1166,10 +1228,10 @@ gg.tree.repeats <- gg.tree +
            size=2)
 
 #Write to file
-pdf(file=paste0(dir.comp, "gaeumannomyces_TEs-", Sys.Date(), ".pdf"), height=4, width=7)
+#pdf(file=paste0(dir.comp, "gaeumannomyces_TEs-", Sys.Date(), ".pdf"), height=4, width=7)
 gg.repeats %>% 
   insert_left(gg.tree.repeats, width=2.7)
-dev.off()
+#dev.off()
 
 ################################################################################
 

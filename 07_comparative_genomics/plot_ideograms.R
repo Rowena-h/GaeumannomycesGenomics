@@ -27,6 +27,38 @@ dir.synteny <- "R:/GaeumannomycesGenomics/06_synteny/"
 dir.comp <- "R:/GaeumannomycesGenomics/07_comparative_genomics/"
 
 
+#Make list with strains and filenames
+strains <- list(strain=c("Gt-19d1", "Gt-8d", "Gt-23d", "Gt14LH10", "Gt-4e",
+                         "Gt-CB1", "Gt-3aA1", "Gh-2C17", "Gh-1B17"),
+                file1=c("Gt17LH19d1", "Gt17LH48d", "Gt23d", "Gt14LH10", "Gt4e",
+                        "GtCB1", "PG3aA1", "NZ1292C17", "Gh1B17"),
+                file2=c("Gt-19d1", "Gt-8d", "Gt-23d", "Gt14LH10", "Gt-4e",
+                        "Gt-CB1", "Gt-3aA1", "Gh-2C17", "Gh-1B17"))
+
+#Read in synteny information inferred from GENESPACE
+synteny <- read.csv(paste0(dir.synteny, "pseudochromosomes.tsv"),
+                    sep="\t", header=FALSE) %>%
+  dplyr::rename(strain="V1", full.contig="V2",
+                pseudochromosome="V3", inversion="V4") %>%
+  mutate(contig=sub(".*_", "", full.contig),
+         pseudochromosome.abb=sub("-.*", "", pseudochromosome),
+         pseudochromosome.col=ifelse(grepl("B", pseudochromosome.abb),
+                                     "mixed", pseudochromosome.abb))
+
+#Read in metadata
+metadata <- read.csv(paste0(dir.phylo, "raxmlng/metadata.csv"))
+
+#Load orthogroup data
+load(paste0(dir.comp, "orthogroup-matrices-2024-05-16.RData"))
+
+#Remove TEs from orthogroup matrix
+orthogroups <- orthogroups %>%
+  rownames_to_column(var="orthogroup") %>%
+  mutate(biotype=orthogroups.stats$biotype[match(orthogroup, orthogroups.stats$orthogroup)]) %>%
+  filter(is.na(biotype)) %>%
+  column_to_rownames(var="orthogroup") %>%
+  select(-biotype)
+
 #Create functions to fix ordering of clades and strains in plots
 plot_orders <- function(df) {
   df %>%
@@ -75,39 +107,6 @@ plot_orders_rev <- function(df) {
                                           "Gt-4e"='paste("Gt-4e")',
                                           "Gt-LH10"='paste("Gt-LH10")'))
 }
-
-
-#Make list with strains and filenames
-strains <- list(strain=c("Gt-19d1", "Gt-8d", "Gt-23d", "Gt14LH10", "Gt-4e",
-                         "Gt-CB1", "Gt-3aA1", "Gh-2C17", "Gh-1B17"),
-                file1=c("Gt17LH19d1", "Gt17LH48d", "Gt23d", "Gt14LH10", "Gt4e",
-                        "GtCB1", "PG3aA1", "NZ1292C17", "Gh1B17"),
-                file2=c("Gt-19d1", "Gt-8d", "Gt-23d", "Gt14LH10", "Gt-4e",
-                        "Gt-CB1", "Gt-3aA1", "Gh-2C17", "Gh-1B17"))
-
-#Read in synteny information inferred from GENESPACE
-synteny <- read.csv(paste0(dir.synteny, "pseudochromosomes.tsv"),
-                    sep="\t", header=FALSE) %>%
-  dplyr::rename(strain="V1", full.contig="V2",
-                pseudochromosome="V3", inversion="V4") %>%
-  mutate(contig=sub(".*_", "", full.contig),
-         pseudochromosome.abb=sub("-.*", "", pseudochromosome),
-         pseudochromosome.col=ifelse(grepl("B", pseudochromosome.abb),
-                                     "mixed", pseudochromosome.abb))
-
-#Read in metadata
-metadata <- read.csv(paste0(dir.phylo, "raxmlng/metadata.csv"))
-
-#Load orthogroup data
-load(paste0(dir.comp, "orthogroup-matrices-2023-07-25.RData"))
-
-#Remove TEs from orthogroup matrix
-orthogroups <- orthogroups %>%
-  rownames_to_column(var="orthogroup") %>%
-  mutate(biotype=orthogroups.stats$biotype[match(orthogroup, orthogroups.stats$orthogroup)]) %>%
-  filter(is.na(biotype)) %>%
-  column_to_rownames(var="orthogroup") %>%
-  select(-biotype)
 
 
 ################################################################################
@@ -314,14 +313,22 @@ all.ortho.genes <- orthogroups %>%
 hcn.genes <- all.ortho.genes %>%
   filter(hog %in% unique(hcn.df$hog))
 
-#Get Starship elements
+#Get Starship elements predicted by starfish
 starship.elements <- 
   read.csv(paste0(dir.comp, "starfish/elementFinder/gaeumannomyces.elements.bed"),
            sep="\t", header=FALSE) %>%
   dplyr::rename(seqnames="V1", start="V2", end="V3", gene="V4", category="V5",
                 strain="V6", elementID="V7", flank="V8") %>%
   mutate(strain=sub("_.*", "", seqnames),
-         seqnames=sub(".*_", "", seqnames))
+         seqnames=sub(".*_", "", seqnames),
+         gene=sub("_", "_EIv1_", gene),
+         false.positive=ifelse(
+           elementID %in%
+             c("Gh-1B17_s00001", "Gh-2C17_s00015" , "Gt-4e_s00053",
+               "Gt-4e_s00062", "Gt-4e_s00063", "Gt-4e_s00064",
+               "Gt14LH10_s00079", "Gt-23d_s00102", "Gt-23d_s00109"),
+           "Y", "N"
+         ))
 
 #For each strain...
 for (i in 1:length(strains$strain)) {
@@ -611,17 +618,17 @@ for (i in 1:length(strains$strain)) {
       rev(df.CSEP.density$max[df.CSEP.density$seqnames == j])
     
     if (j %in% df.tandems$seqnames) {
-      
+
       df.tandems$plot.xmin[df.tandems$seqnames == j] <-
         df.fragments.cumulative$end2[df.fragments.cumulative$seqnames == j] +
         df.fragments.cumulative$start2[df.fragments.cumulative$seqnames == j] -
         df.tandems$plot.xmin[df.tandems$seqnames == j]
-      
+
       df.tandems$plot.xmax[df.tandems$seqnames == j] <-
         df.fragments.cumulative$end2[df.fragments.cumulative$seqnames == j] +
         df.fragments.cumulative$start2[df.fragments.cumulative$seqnames == j] -
         df.tandems$plot.xmax[df.tandems$seqnames == j]
-      
+
     }
     
     if (j %in% df.CSEPs$seqnames) {
@@ -713,105 +720,105 @@ for (i in 1:length(strains$strain)) {
   }
   
   #Calculate number of genes with isoforms
-  df.isoforms <- as.data.frame(gff) %>% 
+  df.isoforms <- as.data.frame(gff) %>%
     filter(type == "mRNA") %>%
     mutate(gene=sub("\\..*", "", ID)) %>%
     group_by(gene) %>%
     summarise(isoforms=n()) %>%
     mutate(strain=strains$strain[i],
            new.strain=metadata$new.strain[match(strain, metadata$strain)])
-  
+
   #Calculate distances of genes to nearest TE
   te.distances.noncseps <- list()
   te.distances.cseps <- list()
   te.distances.hcn <- list()
   te.distances.nonhcn <- list()
-  
+
   for (j in 1:length(df.genes.split)) {
-    
-    genes <- df.genes.split[[j]] %>% 
+
+    genes <- df.genes.split[[j]] %>%
       filter(biotype != "transposable_element_gene") %>%
       mutate(ID=sub("$", ".1", sub("-", "", ID)))
     tes <- df.te.split[[names(df.genes.split)[j]]]
-    
+
     for (k in 1:nrow(genes)) {
-      
+
       start <- genes$start.x[k]
       end <- genes$end.x[k]
-      
+
       if (nrow(tes) == 0) {
-        
+
         distance <- NA
-        
+
       } else if (end < tes$start.x[1]) {
-        
+
         distance <- tes$start.x[1] - end
-        
+
       } else if (start > tes$end.x[nrow(tes)]) {
-        
+
         distance <- start - tes$end.x[nrow(tes)]
-        
+
       } else {
-        
+
         left <- tes$end.x[tes$end.x < start]
         right <- tes$start.x[tes$start.x > end]
-        
+
         if (length(left) == 0 || length(right) == 0) {
-          
+
           distance <- 0
-          
+
         } else {
-          
+
           closest.left <- max(tes$end.x[tes$end.x < start])
           closest.right <- min(tes$start.x[tes$start.x > end])
-          
+
           closer <- which.min(c(start - closest.left,
                                 closest.right - end))
-          
+
           if (closer == 1) {
-            
+
             distance <- start - closest.left
-            
+
           } else {
-            
+
             distance <- closest.right - end
-            
+
           }
-          
+
         }
-        
+
       }
-      
+
       if (is.na(genes$CSEP[k])) {
-        
+
         te.distances.noncseps[[names(df.genes.split)[j]]][
           length(te.distances.noncseps[[names(df.genes.split)[j]]])+1] <- distance
-        
+
       } else {
-        
+
         te.distances.cseps[[names(df.genes.split)[j]]][
           length(te.distances.cseps[[names(df.genes.split)[j]]])+1
         ] <- distance
-        
+
       }
-      
+
       if (genes$ID[k] %in% hcn.genes$gene) {
-        
+
         te.distances.hcn[[names(df.genes.split)[j]]][
           length(te.distances.hcn[[names(df.genes.split)[j]]])+1
         ] <- distance
-        
+
       } else {
-        
+
         te.distances.nonhcn[[names(df.genes.split)[j]]][
           length(te.distances.nonhcn[[names(df.genes.split)[j]]])+1] <- distance
-        
+
       }
-      
+
     }
-    
+
   }
-  
+
   print("Proportion of non-CSEPs within 5Kb of TE")
   print(length(which(unlist(te.distances.noncseps) < 5000)) / length(unlist(te.distances.noncseps)))
   print("Proportion of CSEPs within 5Kb of TE")
@@ -820,9 +827,9 @@ for (i in 1:length(strains$strain)) {
   print(length(which(unlist(te.distances.nonhcn) < 5000)) / length(unlist(te.distances.nonhcn)))
   print("Proportion of HCN within 5Kb of TE")
   print(length(which(unlist(te.distances.hcn) < 5000)) / length(unlist(te.distances.hcn)))
-  
+
   #Combine TE distance results
-  df.te.distances <- 
+  df.te.distances <-
     data.frame(group=rep(c("Non-CSEP", "CSEPs", "HCN", "Non-HCN"),
                          c(length(unlist(te.distances.noncseps)),
                            length(unlist(te.distances.cseps)),
@@ -833,7 +840,7 @@ for (i in 1:length(strains$strain)) {
                           unlist(te.distances.hcn),
                           unlist(te.distances.nonhcn)),
                new.strain=metadata$new.strain[match(strains$strain[i], metadata$strain)])
-  
+
   #Format dataframes into GRanges objects
   fragments.gr <- toGRanges(
     df.fragments.cumulative %>%
@@ -846,7 +853,7 @@ for (i in 1:length(strains$strain)) {
         ],
         invert=ifelse(seqnames %in% inversions$contig, "Y", "N"))
   )
-  
+
   #Assign 10,000 bp telomere regions
   telomeres.up <- as.data.frame(rbind(
     as.data.frame(fragments.gr) %>%
@@ -860,7 +867,7 @@ for (i in 1:length(strains$strain)) {
       filter(invert == "Y") %>%
       select(seqnames, start, end, chr)
   ))
-  
+
   telomeres.down <- as.data.frame(rbind(
     as.data.frame(fragments.gr) %>%
       group_by(chr) %>%
@@ -874,24 +881,24 @@ for (i in 1:length(strains$strain)) {
       filter(invert == "Y") %>%
       select(seqnames, start, end, chr)
   ))
-  
+
   telomeres.up.gr <- resize(
     toGRanges(telomeres.up),
     10000, fix="start"
   )
-  
+
   telomeres.down.gr <- resize(
     toGRanges(telomeres.down),
     10000, fix="end"
   )
-  
+
   telomeres.updown.gr <- c(telomeres.down.gr, telomeres.up.gr)
-  
+
   #Perform permutation tests on distance of CSEPs to telomeres and TEs
-  
+
   genes.gr <- toGRanges(df.genes)
   cseps.gr <- toGRanges(df.CSEPs)
-  
+
   te.gr <- toGRanges(
     as.data.frame(te.gff) %>%
       filter(type == "match") %>%
@@ -899,42 +906,42 @@ for (i in 1:length(strains$strain)) {
       mutate(seqnames=sub(".*v1.1_", "", seqnames)) %>%
       filter(seqnames %in% synteny$contig[synteny$strain == strains$file2[i]])
   )
-  
+
   set.seed(2)
-  
+
   csep.perm <- permTest(A=cseps.gr, B=telomeres.updown.gr,
                         randomize.function=resampleRegions, universe=genes.gr,
                         mc.set.seed=FALSE,
                         ntimes=1000,
                         evaluate.function=meanDistance,
                         verbose=TRUE)
-  
+
   set.seed(2)
-  
+
   csep.te.perm <- permTest(A=cseps.gr, B=te.gr,
                            randomize.function=resampleRegions, universe=genes.gr,
                            mc.set.seed=FALSE,
                            ntimes=1000,
                            evaluate.function=meanDistance,
                            verbose=TRUE)
-  
+
   assign(paste0("csep.perm.", strains$strain[i]), csep.perm)
   assign(paste0("csep.te.perm.", strains$strain[i]), csep.te.perm)
-  
+
   #Split genes by chromosome
   df.genes.chrsplit <- df.genes %>%
     mutate(chr=synteny$pseudochromosome.abb[synteny$strain == strains$file2[i]][
       match(seqnames, synteny$contig[synteny$strain == strains$file2[i]])
     ]) %>%
     split(.$chr)
-  
+
   #Split CSEPs by chromosome
   df.CSEPs.chrsplit <- df.CSEPs %>%
     mutate(chr=synteny$pseudochromosome.abb[synteny$strain == strains$file2[i]][
       match(seqnames, synteny$contig[synteny$strain == strains$file2[i]])
     ]) %>%
     split(.$chr)
-  
+
   #Split TEs by chromosome
   df.te.chrsplit <- as.data.frame(te.gff) %>%
     filter(type == "match") %>%
@@ -945,38 +952,38 @@ for (i in 1:length(strains$strain)) {
            ]) %>%
     filter(seqnames %in% synteny$contig[synteny$strain == strains$file2[i]]) %>%
     split(.$chr)
-  
+
   #Perform permutation tests on distance of CSEPs to telomeres and TEs for each chromosome
   for (chr in unique(fragments.gr$chr)) {
-    
+
     genes.gr <- toGRanges(df.genes.chrsplit[[chr]])
     cseps.gr <- toGRanges(df.CSEPs.chrsplit[[chr]])
-    
+
     telomeres.gr <- telomeres.updown.gr[telomeres.updown.gr$chr == chr]
-    
+
     te.gr <- toGRanges(df.te.chrsplit[[chr]])
-    
+
     set.seed(2)
-    
+
     csep.perm <- permTest(A=cseps.gr, B=telomeres.gr,
                           randomize.function=resampleRegions, universe=genes.gr,
                           mc.set.seed=FALSE,
                           ntimes=1000,
                           evaluate.function=meanDistance,
                           verbose=TRUE)
-    
+
     set.seed(2)
-    
+
     csep.te.perm <- permTest(A=cseps.gr, B=te.gr,
                              randomize.function=resampleRegions, universe=genes.gr,
                              mc.set.seed=FALSE,
                              ntimes=1000,
                              evaluate.function=meanDistance,
                              verbose=TRUE)
-    
+
     assign(paste0("csep.perm.", strains$strain[i], ".", chr), csep.perm)
     assign(paste0("csep.te.perm.", strains$strain[i], ".", chr), csep.te.perm)
-    
+
   }
   
   assign(paste0("df.fragments.cumulative.", strains$strain[i]), df.fragments.cumulative)
@@ -1028,7 +1035,7 @@ all.CSEP.density <- do.call("rbind", mget(ls(pattern="df.CSEP.density.cumulative
 all.hcn <- do.call("rbind", mget(ls(pattern="df.hcn.cumulative.")))
 all.hcn <- plot_orders(all.hcn)
 
-all.distances <- do.call("rbind", mget(ls(pattern="df.te.distances."))) 
+all.distances <- do.call("rbind", mget(ls(pattern="df.te.distances.")))
 all.distances <- plot_orders_rev(all.distances)
 
 all.isoforms <- do.call("rbind", mget(ls(pattern="df.isoforms.")))
@@ -1138,9 +1145,9 @@ gg.ideogram <- ggplot(all.fragments, aes(x=end2)) +
         panel.background=element_blank())
 
 #Write to file
-pdf(paste0(dir.comp, "ideogram-", Sys.Date(), ".pdf"), width=7, height=5)
+#pdf(paste0(dir.comp, "ideogram-", Sys.Date(), ".pdf"), width=7, height=5)
 gg.ideogram
-dev.off()
+#dev.off()
 
 
 ################## IDEOGRAM - TE density and CSEP locations  ###################
@@ -1190,9 +1197,11 @@ gg.te <- ggplot(all.fragments, aes(x=end2)) +
                     values=c("#FFAABB", "#EE8866", "#EEDD88", "#BBCC33", 
                              "#44BB99", "#77AADD", "dimgrey")) +
   guides(colour=guide_colourbar(title.position="top",
-                                title.theme=element_text(face="bold", size=6)),
+                                title.theme=element_text(face="bold", size=6),
+                                order=1),
          fill=guide_legend(title.position="top",
-                           title.theme=element_text(face="bold", size=6))) +
+                           title.theme=element_text(face="bold", size=6),
+                           order=2)) +
   scale_x_continuous(labels=label_number(accuracy=1,
                                          scale=1e-6,
                                          suffix="Mbp"),
@@ -1200,7 +1209,7 @@ gg.te <- ggplot(all.fragments, aes(x=end2)) +
   theme_minimal() +
   theme(legend.position=c(0.95, 0.65),
         legend.direction="vertical",
-        legend.text=element_text(size=5),
+        legend.text=element_text(size=5, margin=margin(0, 0, 0, 2)),
         legend.key.size=unit(0.2, "cm"),
         legend.margin=margin(0, 0, 0, 0, unit="pt"),
         strip.background=element_blank(),
@@ -1336,9 +1345,9 @@ for (hcn.hog in sort(unique(all.hcn$hog))) {
 }
 
 #Write to file
-pdf(paste0(dir.comp, "hcn_facet-", Sys.Date(), ".pdf"), width=7, height=7)
+#pdf(paste0(dir.comp, "hcn_facet-", Sys.Date(), ".pdf"), width=7, height=7)
 plot_grid(plotlist=mget(ls(pattern="gg.hcn.hog.")))
-dev.off()
+#dev.off()
 
 
 #Filter for region of clustered HCN orthologues on Gt-8d
@@ -1597,11 +1606,11 @@ gg.avenacinase.aln <-
   plot_grid(plotlist=mget(ls(pattern="gg.msa.")), align="v", axis="l", ncol=1)
 
 #Write to file
-pdf(paste0(dir.comp, "avenacinase-", Sys.Date(), ".pdf"), width=7, height=6.5)
+#pdf(paste0(dir.comp, "avenacinase-", Sys.Date(), ".pdf"), width=7, height=6.5)
 plot_grid(plot_grid(gg.avenacinase.pos, gg.tree.avenacinase
                     , nrow=1, rel_widths=c(1.1, 1), labels="auto"),
           gg.avenacinase.aln, ncol=1, rel_heights=c(1, 2), labels=c("", "c"))
-dev.off()
+#dev.off()
 
 
 ############################ IDEOGRAM - MAT loci ###############################
@@ -1676,9 +1685,9 @@ gg.mat <- ggplot(all.fragments, aes(x=end2)) +
         plot.margin=margin(20, 5.5, 5.5, 20))
 
 #Write to file
-pdf(paste0(dir.comp, "MAT_loci-", Sys.Date(), ".pdf"), width=3.3, height=2.17)
+#pdf(paste0(dir.comp, "MAT_loci-", Sys.Date(), ".pdf"), width=3.3, height=2.17)
 gg.mat
-dev.off()
+#dev.off()
 
 
 #################### TE/GENE AND CSEP DENSITY CORRELATION  #####################
@@ -1694,11 +1703,14 @@ df.te.csep <- plot_orders_rev(df.te.csep)
 for (strain in unique(df.te.csep$new.strain)) {
   
   plot(
-    ggarrange(ggqqplot(df.te.csep$num.x[df.te.csep$new.strain == strain]) +
-                ggtitle(paste0(strain, " num.x")),
-              ggqqplot(df.te.csep$num.y[df.te.csep$new.strain == strain]) +
-                ggtitle(paste0(strain, " num.y")))
-  )
+    ggqqplot(residuals(lm(num.x ~ num.y, data=df.te.csep[df.te.csep$new.strain == strain,]))) +
+        ggtitle(
+          paste0(strain, " num.x p=",
+                 signif(shapiro.test(
+                   df.te.csep$num.x[df.te.csep$new.strain == strain])$p, digits=3),
+                 " num.y p=", signif(shapiro.test(
+                   df.te.csep$num.y[df.te.csep$new.strain == strain])$p, digits=3)))
+        )
   
 }
 
@@ -1726,24 +1738,25 @@ gg.te.cseps <- ggplot(df.te.csep, aes(x=num.x, y=num.y)) +
   facet_nested_wrap(~clade.label+new.strain.label, nrow=1,
                     nest_line=element_line(),
                     labeller=label_parsed) +
-  geom_point(size=0.3) +
-  geom_smooth(method="loess", linewidth=0.3,
-              colour="#87AE88", fill="#87AE88") +
+  geom_point(size=0.3, 
+             aes(colour=new.strain %in% df.te.csep.cor$new.strain),
+             show.legend=FALSE) +
   geom_text(data=df.te.csep.cor,
             aes(label=paste('tau', "==", round(cor, 2))),
             parse=TRUE,
-            x=5, y=max(na.omit(df.te.csep$num.y)),
-            size=1.7, 
+            x=3, y=Inf,
+            size=1.6, 
             inherit.aes=FALSE) +
   labs(x="CSEP density", y="TE density") +
   scale_y_continuous(expand=expansion(mult=c(0, 0.1)),
                      breaks=integer_breaks()) +
-  coord_cartesian(ylim=c(0, NA)) +
+  scale_colour_manual(values=c("darkgrey", "black")) +
+  coord_cartesian(clip="off") +
   theme_minimal() +
-  theme(strip.text=element_text(size=8),
+  theme(strip.text=element_text(size=5),
         axis.title.x=element_blank(),
         axis.text.x=element_blank(),
-        panel.spacing=unit(0.8, "lines"),
+        panel.spacing=unit(0.5, "lines"),
         axis.title=element_text(size=7),
         axis.text.y=element_text(size=5),
         panel.grid.minor=element_blank(),
@@ -1753,14 +1766,20 @@ gg.te.cseps <- ggplot(df.te.csep, aes(x=num.x, y=num.y)) +
 df.gene.csep <- left_join(all.CSEP.density, all.gene.density,
                           by=c("max", "strain", "new.strain", "seqnames"))
 
+#Set plot order
+df.gene.csep <- plot_orders_rev(df.gene.csep)
+
 #Check for normality
 for (strain in unique(df.gene.csep$new.strain)) {
   
   plot(
-    ggarrange(ggqqplot(df.gene.csep$num.x[df.gene.csep$new.strain == strain]) +
-                ggtitle(paste0(strain, " num.x")),
-              ggqqplot(df.gene.csep$num.y[df.gene.csep$new.strain == strain]) +
-                ggtitle(paste0(strain, " num.y")))
+    ggqqplot(residuals(lm(num.x ~ num.y, data=df.gene.csep[df.gene.csep$new.strain == strain,]))) +
+      ggtitle(
+        paste0(strain, " num.x p=",
+               signif(shapiro.test(
+                 df.gene.csep$num.x[df.gene.csep$new.strain == strain])$p, digits=3),
+               " num.y p=", signif(shapiro.test(
+                 df.gene.csep$num.y[df.gene.csep$new.strain == strain])$p, digits=3)))
   )
   
 }
@@ -1771,23 +1790,29 @@ df.gene.csep.cor <- df.gene.csep %>%
   cor_test(num.x, num.y, method="kendall") %>%
   filter(p < 0.05)
 
+#Set plot order
+df.gene.csep.cor <- plot_orders_rev(df.gene.csep.cor)
+
 #Plot scatterplots of gene and CSEP density
 gg.gene.csep <- ggplot(df.gene.csep, aes(x=num.x, y=num.y)) +
   facet_wrap(~new.strain, nrow=1) +
-  geom_point(size=0.3) +
-  geom_smooth(method="loess", linewidth=0.3,
-              colour="#87AE88", fill="#87AE88") +
+  geom_point(size=0.3, 
+             aes(colour=new.strain %in% df.gene.csep.cor$new.strain),
+             show.legend=FALSE) +
   geom_text(data=df.gene.csep.cor,
             aes(label=paste('tau', "==", round(cor, 2))),
             parse=TRUE,
-            x=5, y=8,
-            size=1.7) +
+            x=3, y=Inf,
+            size=1.6, 
+            inherit.aes=FALSE) +
   labs(x="CSEP density", y="Gene density") +
   scale_y_continuous(expand=expansion(mult=c(0, 0.1)),
                      breaks=integer_breaks()) +
+  scale_colour_manual(values=c("darkgrey", "black")) +
+  coord_cartesian(clip="off") +
   theme_minimal() +
   theme(strip.text=element_blank(),
-        panel.spacing=unit(0.8, "lines"),
+        panel.spacing=unit(0.5, "lines"),
         axis.title=element_text(size=7),
         axis.text=element_text(size=5),
         panel.grid.minor=element_blank(),
@@ -1815,19 +1840,54 @@ for (strain in unique(all.distances$new.strain)) {
       ggqqplot(all.distances$distance[
         intersect(which(all.distances$new.strain == strain),
                   which(all.distances$group == "CSEPs"))]) +
-        ggtitle(paste0(strain, " CSEPs")),
+        ggtitle(
+          paste0(strain, " CSEP p=",
+                 signif(shapiro.test(
+                   all.distances$distance[
+                     intersect(which(all.distances$new.strain == strain),
+                               which(all.distances$group == "CSEPs"))])$p, digits=3))
+        ),
       ggqqplot(all.distances$distance[
         intersect(which(all.distances$new.strain == strain),
                   which(all.distances$group == "Non-CSEP"))]) +
-        ggtitle(paste0(strain, " Non-CSEP")),
+        ggtitle(
+          paste0(strain, " non-CSEP p=",
+                 signif(
+                   DescTools::AndersonDarlingTest(
+                     null="pnorm",
+                     all.distances$distance[
+                       intersect(which(all.distances$new.strain == strain),
+                                 which(all.distances$group == "Non-CSEP"))]
+                   )$p, digits=3
+                 ))
+        ),
       ggqqplot(all.distances$distance[
         intersect(which(all.distances$new.strain == strain),
                   which(all.distances$group == "HCN"))]) +
-        ggtitle(paste0(strain, " HCN")),
+        ggtitle(
+          paste0(strain, " HCN p=",
+                 signif(
+                   DescTools::AndersonDarlingTest(
+                     null="pnorm",
+                     all.distances$distance[
+                       intersect(which(all.distances$new.strain == strain),
+                                 which(all.distances$group == "HCN"))])$p, digits=3
+                 ))
+        ),
       ggqqplot(all.distances$distance[
         intersect(which(all.distances$new.strain == strain),
                   which(all.distances$group == "Non-HCN"))]) +
-        ggtitle(paste0(strain, " Non-HCN"))
+        ggtitle(
+          paste0(strain, " non-HCN p=",
+                 signif(
+                   DescTools::AndersonDarlingTest(
+                     null="pnorm",
+                     all.distances$distance[
+                       intersect(which(all.distances$new.strain == strain),
+                                 which(all.distances$group == "Non-HCN"))]
+                   )$p, digits=3
+                 ))
+        )
     )
   )
   
@@ -1855,14 +1915,14 @@ distances.hcn.test <- plot_orders_rev(distances.hcn.test)
 
 #Check for normality (regardless of CSEP or not)
 for (strain in unique(all.distances$new.strain)) {
-  
+
   plot(
     ggqqplot(all.distances %>%
                filter(new.strain == strain, group %in% c("CSEPs", "Non-CSEP")) %>%
                pull(distance)) +
       ggtitle(strain)
   )
-  
+
 }
 
 #Do Games-Howell test on distances 
@@ -1935,27 +1995,82 @@ gg.distances.cseps <- ggplot(all.distances %>%
         legend.margin=margin(0, 0, 0, 0),
         legend.key.size=unit(8, "pt"),
         legend.title=element_blank(),
-        legend.text=element_text(size=7, margin=margin(0, 5, 0, 0)),
+        legend.text=element_text(size=7, margin=margin(0, 5, 0, 2)),
         axis.ticks.x=element_blank(),
         axis.title.x=element_blank(),
         axis.title.y=element_text(size=7),
         axis.text.y=element_text(size=5),
-        axis.text.x=element_text(size=7),
+        axis.text.x=element_text(size=5),
         panel.grid.major.x=element_blank(),
-        panel.spacing=unit(1, "lines"),
+        panel.spacing=unit(0.5, "lines"),
         plot.margin=margin(10, 5.5, 5.5, 5.5))
 
+
+########################### INTERGENIC DISTANCES  ##############################
+
+#Calculate intergenic distances
+all.itl <- all.genes %>% 
+  group_by(seqnames, new.strain) %>%
+  arrange(seqnames, new.strain, start.x) %>%
+  mutate(distance.fiveprime=start.x-lag(end.x, default=dplyr::first(start.x)),
+         distance.threeprime=lead(start.x, default=dplyr::last(end.x))-end.x,
+         csep=ID %in% all.CSEPs$ID) %>%
+  filter(distance.fiveprime >= 0, distance.threeprime >= 0)
+
+#Make function for dynamic axis labels
+addUnits <- function(n) {
+  labels <- ifelse(n < 1000, n,
+                   ifelse(n < 1e6, paste0(round(n/1e3), 'k')
+                   )
+  )
+  return(labels)
+}
+
+#Plot density of intergenic distances
+gg.itl <- ggplot(all.itl, aes(x=distance.threeprime, y=distance.fiveprime)) +
+  facet_wrap(.~new.strain, scales="free") +
+  geom_hex(aes(fill=..count..),
+           colour=NA,
+           bins=15) +
+  geom_point(data=all.itl[all.itl$csep,],
+             shape=21,
+             fill="white",
+             stroke=0.2,
+             size=0.5) +
+  scale_fill_gradientn(colours=rev(c("#EE8866", "#EEDD88",
+                                     "#BBCC33", "#44BB99", "#77AADD")),
+                       name="Gene count") +
+  labs(x="3' intergenic length (bp)", y="5' intergenic length (bp)") +
+  scale_x_log10(labels=addUnits) +
+  scale_y_log10(labels=addUnits) +
+  theme_minimal() +
+  theme(strip.placement="outside",
+        strip.text=element_text(size=7, face="bold"),
+        legend.position="top",
+        legend.margin=margin(0, 0, -10, 0),
+        legend.key.size=unit(7, "pt"),
+        legend.title=element_text(size=7, face="bold"),
+        legend.text=element_text(size=4, margin=margin(2, 5, 0, 2)),
+        axis.title=element_text(size=6),
+        axis.text=element_text(size=5),
+        panel.grid.major.x=element_blank(),
+        panel.spacing=unit(0.1, "lines"),
+        plot.margin=margin(10, 5.5, 5.5, 5.5))
+
+
 #Write to file
-pdf(paste0(dir.comp, "te_csep_comp-", Sys.Date(), ".pdf"), width=7, height=6.2)
+#pdf(paste0(dir.comp, "te_csep_comp-", Sys.Date(), ".pdf"), width=7, height=6.2)
 plot_grid(gg.te,
-          plot_grid(gg.te.cseps, gg.gene.csep, gg.distances.cseps,
-                    align="v", axis="lr", ncol=1,
-                    rel_heights=c(1.1, 0.9, 2),
-                    labels=c("b", "", "c")),
+          plot_grid(
+            plot_grid(gg.te.cseps, gg.gene.csep, gg.distances.cseps,
+                      align="v", axis="lr", ncol=1,
+                      rel_heights=c(1.1, 0.9, 2),
+                      labels=c("b", "", "c")),
+            gg.itl, labels=c("", "d"), rel_widths=c(1.5, 1)),
           rel_heights=c(1, 1.5),
           ncol=1,
           labels=c("a", ""))
-dev.off()
+#dev.off()
 
 
 #Plot box and violin plots for average TE-HCN distance
@@ -2010,10 +2125,10 @@ gg.distances.hcn <-
         panel.spacing=unit(1, "lines"))
 
 #Write to file
-pdf(paste0(dir.comp, "hcn_duplicates-", Sys.Date(), ".pdf"), width=7, height=5)
+#pdf(paste0(dir.comp, "hcn_duplicates-", Sys.Date(), ".pdf"), width=7, height=5)
 plot_grid(gg.duplicates, gg.distances.hcn, gg.hcn.zoom,
           nrow=3, rel_heights=c(1, 1.3, 1), labels="auto")
-dev.off()
+#dev.off()
 
 
 ############################ ISOFORM HISTOGRAMS  ###############################
@@ -2086,9 +2201,9 @@ gg.isoforms <- ggplot(all.isoform.numbers, aes(x=isoforms, y=prop*100)) +
         plot.margin=margin(5.5, 5.5, 0, 5.5))
 
 #Write to file
-pdf(paste0(dir.comp, "isoforms-", Sys.Date(), ".pdf"), width=7, height=2)
+#pdf(paste0(dir.comp, "isoforms-", Sys.Date(), ".pdf"), width=7, height=2)
 gg.isoforms
-dev.off()
+#dev.off()
 
 
 ######################## CSEP LOCATION PERMUTATIONS  ###########################
@@ -2215,10 +2330,10 @@ gg.perm.tes <- ggplot(perm.tes.df, aes(y=new.strain, x=chr)) +
         axis.text.x=element_text(colour="black", size=5))
 
 #Write to file
-pdf(paste0(dir.comp, "permutations-", Sys.Date(), ".pdf"), width=7, height=3.5)
+#pdf(paste0(dir.comp, "permutations-", Sys.Date(), ".pdf"), width=7, height=3.5)
 ggarrange(gg.perm.tes, gg.perm.telomeres,
           labels="auto", common.legend=TRUE, legend="right") 
-dev.off()
+#dev.off()
 
 
 ################################# STARSHIPS ####################################
@@ -2229,8 +2344,7 @@ all.starships <- all.starships %>%
 
 #Filter for captain genes
 all.captains <- all.starships %>% 
-  filter(category == "cap") %>%
-  mutate(gene=sub("_", "_EIv1_", gene))
+  filter(category == "cap")
 
 #Read in captain genes identified manually
 manual.captains <- 
@@ -2285,14 +2399,14 @@ starship.euler.plot <-
        labels=list(cex=0.5,
                    col="black",
                    padding=unit(c(1, 1), "pt")),
-       fills=list(fill=c("white", "#FFAD48", "red", "khaki1",
+       fills=list(fill=c("white", "khaki", "red", "#FFAD48",
                          rep("white", 2), "black")),
        edges=list(col="dimgrey",
                   lwd=0.3),
        quantities=list(labels=c(starship.methods[1], 
                                 starship.methods[2],
                                 "blank",
-                                paste0(starship.methods[4], "*"),
+                                starship.methods[4],
                                 starship.methods[3],
                                 "blank",
                                 starship.methods[5]),
@@ -2308,8 +2422,10 @@ starship.euler.grob <- as.grob(starship.euler.plot)
 all.cargo <- all.starships %>% 
   filter(str_count(category, "[.]") == 1)
 
+all.fragments.rev <- plot_orders_rev(all.fragments)
+
 #Plot ideograms with starship locations
-gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2)) +
+gg.starships.ideogram <- ggplot(all.fragments.rev, aes(x=end2)) +
   geom_rect(aes(xmin=start2-200000, xmax=end2+200000,
                 ymin=as.numeric(new.strain)-0.2,
                 ymax=as.numeric(new.strain)+0.2,
@@ -2329,8 +2445,8 @@ gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2)) +
                 ymin=as.numeric(new.strain)-0.14,
                 ymax=as.numeric(new.strain)+0.14),
             linewidth=0.3,
-            fill="#FFAD48",
-            colour="#FFAD48") +
+            fill="khaki",
+            colour="khaki") +
   geom_rect(data=manual.captains %>%
               filter(!ID %in% all.captains$gene,
                      ID %in% all.tyr$gene),
@@ -2338,17 +2454,8 @@ gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2)) +
                 ymin=as.numeric(new.strain)-0.14,
                 ymax=as.numeric(new.strain)+0.14),
             linewidth=0.3,
-            fill="khaki1",
-            colour="khaki1") +
-  geom_text(data=manual.captains %>%
-              filter(!ID %in% all.captains$gene,
-                     ID %in% all.tyr$gene),
-            aes(x=(plot.xmin+plot.xmax)/2,
-                y=as.numeric(new.strain)-0.3,
-                label="*"),
-            fontface="bold",
-            colour="black",
-            size=2) +
+            fill="#FFAD48",
+            colour="#FFAD48") +
   geom_rect(data=all.cargo,
             aes(xmin=plot.xmin, xmax=plot.xmax,
                 ymin=as.numeric(new.strain)-0.14,
@@ -2371,14 +2478,18 @@ gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2)) +
             fill="red",
             colour="red") +
   geom_label_repel(data=all.captains %>%
-                     mutate(label=as.numeric(sub(".*_s", "", elementID))),
+                     mutate(label=ifelse(
+                       false.positive == "Y",
+                       paste0(as.numeric(sub(".*_s", "", elementID)), "†"),
+                       as.numeric(sub(".*_s", "", elementID))
+                       )),
                    aes(x=(plot.xmin+plot.xmax)/2,
                        y=as.numeric(new.strain)+0.15,
                        label=label),
                    fill="black",
                    label.size=NA,
                    segment.colour="black",
-                   size=2.5,
+                   size=2,
                    colour="white",
                    fontface="bold",
                    nudge_y=0.36,
@@ -2404,28 +2515,40 @@ gg.starships.ideogram <- ggplot(all.fragments, aes(x=end2)) +
   guides(fill=guide_legend(title.position="top",
                            title.theme=element_text(face="bold", size=6))) +
   theme_minimal() +
-  theme(legend.position=c(0.97, 0.75),
+  theme(legend.position=c(0.98, 0.78),
         legend.direction="vertical",
-        legend.text=element_text(size=5),
+        legend.text=element_text(size=5, margin=margin(0, 0, 0, 2)),
         legend.key.size=unit(0.2, "cm"),
         legend.margin=margin(0, 0, 0, 0, unit="pt"),
-        axis.text.y=element_text(size=8),
+        axis.text.y=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks=element_blank(),
         axis.title=element_blank(),
-        strip.background=element_blank(),
-        strip.text.y.left=element_text(size=6, face="bold", angle=0, vjust=-0.1),
-        strip.clip="off",
         panel.spacing=unit(0.5, "lines"),
-        plot.margin=margin(5.5, 30, 5.5, 30),
+        plot.margin=margin(0, 30, 0, 5.5),
         panel.grid.major=element_blank(), 
         panel.grid.minor=element_blank(), 
         panel.background=element_blank())
 
-#Write to file
-pdf(paste0(dir.comp, "starships_locations-", Sys.Date(), ".pdf"), width=7, height=4)
-gg.starships.ideogram
-dev.off()
+#Plot lineage labels
+strip.labels <- ggplot(all.fragments, aes(x=0)) +
+  facet_nested(clade.label+new.strain.label~.,
+               space="free", switch="y", scales="free_y",
+               labeller=label_parsed,
+               nest_line=element_line(),
+               strip=strip_nested(size="variable")) +
+  theme(strip.background=element_blank(),
+        strip.text.y.left=element_text(size=6, face="bold", angle=0),
+        strip.clip="off",
+        panel.spacing=unit(1, "lines"),
+        plot.margin=margin(20, 0, 13.5, 15),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title=element_blank(),
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(), 
+        panel.background=element_blank(),
+        plot.background=element_blank())
 
 
 ## Schematics ##
@@ -2433,10 +2556,15 @@ dev.off()
 #Combine TE and gene annotations
 all.annotations <- bind_rows(all.genes, all.genes.tes)
 
+#Add new field for plotting
+starship.elements <- starship.elements %>%
+  mutate(seq_id=elementID,
+         seq_id=ifelse(false.positive == "Y", paste("†", seq_id), seq_id))
+
 #Filter for genes
 starship.genes <- starship.elements %>%
   filter(category != "insert", category != "flank", elementID != "Gt-4e_s00063") %>%
-  mutate(ID=sub("_", "_EIv1_", gene)) %>%
+  mutate(ID=gene) %>%
   left_join(all.annotations, by="ID") %>%
   mutate(category=ifelse("transposable_element_gene" == biotype & !is.na(biotype),
                          "transposable_element_gene", category),
@@ -2444,30 +2572,43 @@ starship.genes <- starship.elements %>%
          clade=factor(metadata$clade[match(sub("_.*", "", elementID), metadata$strain)],
                       levels=c("GtB", "GtA", "Ga", "Gh"))) %>%
   arrange(factor(new.strain, levels(all.fragments$new.strain))) %>%
-  select(elementID, feat_id="ID", category, start, end, clade) %>%
-  mutate(seq_id=sub("Gt-3aA1_s00046,Gt-3aA1_s00047", "Gt-3aA1_s00046", elementID),
+  select(seq_id, elementID, feat_id="ID", category, start, end, clade) %>%
+  mutate(seq_id=sub("Gt-3aA1_s00046,Gt-3aA1_s00047", "Gt-3aA1_s00046", seq_id),
          seq_id=sub("^Gt-3aA1_s00047$", "Gt-3aA1_s00046", seq_id),
          seq_id=str_replace_all(seq_id, c("Gt14LH10"="Gt-LH10",
                                           "Gt-3aA1"="Ga-3aA1",
-                                          "Gt-CB1"="Ga-CB1")),
-         seq_id=factor(seq_id, levels=rev(unique(seq_id))))
+                                          "Gt-CB1"="Ga-CB1")))
 
-#Filer for flanking repeats
+#Set order of elements in plot
+starship.levels <- starship.genes %>%
+  arrange(match(clade,
+                c("Gh", "Ga", "GtA", "GtB")),
+          desc(match(sub("_.*", "", elementID),
+                     c("Gh-2C17", "Gh-1B17", "Gt-3aA1", "Gt-CB1", "Gt-19d1",
+                       "Gt-8d", "Gt-23d", "Gt-4e", "Gt14LH10"))),
+          desc(sub(".*_", "", elementID))) %>%
+  distinct(seq_id) %>%
+  pull(seq_id)
+
+starship.genes <- starship.genes %>%
+  mutate(seq_id=factor(seq_id, levels=starship.levels))
+
+#Filter for flanking repeats
 starship.flanks <- starship.elements %>% 
   filter(category == "flank") %>%
-  mutate(ID=sub("_", "_EIv1_", gene)) %>%
+  mutate(ID=gene) %>%
   left_join(all.annotations, by="ID") %>%
   arrange(factor(new.strain, levels(all.fragments$new.strain))) %>%
   mutate(clade=factor(metadata$clade[match(sub("_.*", "", elementID), metadata$strain)],
                       levels=c("GtB", "GtA", "Ga", "Gh"))) %>%
-  select(elementID, feat_id="ID", category, start, end, clade) %>%
+  select(seq_id, elementID, feat_id="ID", category, start, end, clade) %>%
   mutate(category=str_match(feat_id, "\\|(.*?)\\|")[,2],
-         seq_id=sub("Gt-3aA1_s00046,Gt-3aA1_s00047", "Gt-3aA1_s00046", elementID),
+         seq_id=sub("Gt-3aA1_s00046,Gt-3aA1_s00047", "Gt-3aA1_s00046", seq_id),
          seq_id=sub("^Gt-3aA1_s00047$", "Gt-3aA1_s00046", seq_id),
          seq_id=str_replace_all(seq_id, c("Gt14LH10"="Gt-LH10",
                                           "Gt-3aA1"="Ga-3aA1",
                                           "Gt-CB1"="Ga-CB1")),
-         seq_id=factor(seq_id, levels=rev(unique(seq_id))))
+         seq_id=factor(seq_id, levels=starship.levels))
 
 #Filter for nested starship
 starship.nested <- starship.elements %>%
@@ -2488,13 +2629,13 @@ starship.feats <- bind_rows(starship.genes, starship.flanks)
 gg.starship.schematic.tmp <- gggenomes(genes=starship.feats, feats=starship.nested) %>%
   flip_seqs(where(
     ~.x$seq_id %in%
-      c("Gt-LH10_s00089", "Gt-LH10_s00088", "Gt-LH10_s00085", "Gt-LH10_s00079", "Gt-LH10_s00074",
-        "Gt-4e_s00053", "Gt-4e_s00058", "Gt-4e_s00062",
-        "Gt-23d_s00109", "Gt-23d_s00107", "Gt-23d_s00103", "Gt-23d_s00099",
+      c("Gt-LH10_s00089", "Gt-LH10_s00088", "Gt-LH10_s00085", "† Gt-LH10_s00079", "Gt-LH10_s00074",
+        "† Gt-4e_s00053", "Gt-4e_s00058", "† Gt-4e_s00062",
+        "† Gt-23d_s00109", "Gt-23d_s00107", "Gt-23d_s00103", "Gt-23d_s00099",
         "Gt-19d1_s00091",
         "Ga-3aA1_s00044",
         "Ga-CB1_s00036",
-        "Gh-1B17_s00001")
+        "† Gh-1B17_s00001")
   ))
 
 #Pull sequence coordinates
@@ -2560,13 +2701,14 @@ gg.starship.schematic <- gggenomes(seqs=starship.seqs, genes=starship.feats, fea
         legend.title=element_blank(),
         legend.margin=margin(0,0,-10,0),
         strip.background=element_blank(),
-        strip.text.y=element_text(size=8, face="bold", margin=margin(-5, 22, -5, 0)),
+        strip.text.y=element_text(size=8, face="bold", margin=margin(-5, 30, -5, 0)),
         panel.spacing=unit(0, "lines"))
 
 #Get flanking repeats for custom shape plotting
 starship.repeats <- gg.starship.schematic.tmp %>% 
   get_seqs() %>%
   left_join(starship.flanks, by="seq_id") %>%
+  filter(!is.na(elementID)) %>%
   mutate(seq_id=factor(seq_id, levels=levels(starship.genes$seq_id)),
          repeat.x=ifelse(xend-x > 0,
                          end.y-start.x,
@@ -2575,7 +2717,7 @@ starship.repeats <- gg.starship.schematic.tmp %>%
                             start.y-start.x,
                             end.x-end.y),
          repeat.pos=(repeat.x+repeat.xend)/2,
-         clade=factor(metadata$clade[match(sub("_.*", "", seq_id), metadata$new.strain)],
+         clade=factor(metadata$clade[match(sub("_.*", "", elementID), metadata$strain)],
                       levels=c("GtB", "GtA", "Ga", "Gh")),
          clade.label=recode_factor(
            clade,
@@ -2599,15 +2741,16 @@ gg.starship.schematic <- gg.starship.schematic +
 #Get RIP windows for each element
 for (new.strain in unique(starship.seqs$new.strain)) {
   
-  elements <- starship.seqs$seq_id[starship.seqs$new.strain == new.strain]
+  elements <- starship.seqs$elementID[starship.seqs$new.strain == new.strain]
   
   for (element in elements) {
     
     starship.seqs.tmp <- 
       starship.seqs[intersect(which(starship.seqs$new.strain == new.strain),
-                              which(starship.seqs$seq_id == element)),]
+                              which(starship.seqs$elementID == element)),]
     
-    rip.tmp <- all.rip[intersect(which(all.rip$new.strain == new.strain), which(all.rip$seqnames == starship.seqs.tmp$seqnames)),]
+    rip.tmp <- all.rip[intersect(which(all.rip$new.strain == new.strain),
+                                 which(all.rip$seqnames == starship.seqs.tmp$seqnames)),]
     
     rip.min <- starship.seqs.tmp$start
     rip.max <- starship.seqs.tmp$end
@@ -2619,7 +2762,7 @@ for (new.strain in unique(starship.seqs$new.strain)) {
                end.x < starship.seqs.tmp$end) %>%
         mutate(rip.x=end.x-rip.min,
                rip.xend=start.x-rip.min,
-               seq_id=element)
+               elementID=element)
       
     } else {
       
@@ -2628,7 +2771,7 @@ for (new.strain in unique(starship.seqs$new.strain)) {
                end.x < starship.seqs.tmp$end) %>%
         mutate(rip.x=rip.max-start.x,
                rip.xend=rip.max-end.x,
-               seq_id=element)
+               elementID=element)
       
     }
     
@@ -2643,11 +2786,12 @@ for (new.strain in unique(starship.seqs$new.strain)) {
 
 #Combine element RIP windows
 starship.rip <- do.call("rbind", mget(ls(pattern="rip.starship."))) %>%
-  mutate(seq_id=factor(seq_id, levels=rev(levels(starship.genes$seq_id)))) %>%
-  select(seq_id, rip.x, rip.xend, CRI) %>%
+  mutate(seq_id=starship.genes$seq_id[match(elementID, starship.genes$elementID)],
+         seq_id=factor(seq_id, levels=rev(levels(starship.genes$seq_id)))) %>%
+  select(seq_id, elementID, rip.x, rip.xend, CRI) %>%
   mutate(baseline=as.numeric(seq_id)+0.4,
          y=baseline+(CRI*0.1),
-         clade=factor(metadata$clade[match(sub("_.*", "", seq_id), metadata$new.strain)],
+         clade=factor(metadata$clade[match(sub("_.*", "", elementID), metadata$strain)],
                       levels=c("GtB", "GtA", "Ga", "Gh")),
          clade.label=recode_factor(
            clade,
@@ -2685,21 +2829,33 @@ tyr.tree <- root(tyr.tree,
                  "OBZ73217.1_Grifola_frondosa",
                  edgelabel=TRUE, resolve.root=TRUE)
 
-#Get metadata
-tyr.metadata <- read.csv(paste0(dir.comp, "tyr_genetree/metadata_tyr.csv"))
+#Potential false positives according to starfish
+suspect.caps <- starship.elements %>%
+  filter(elementID %in% c("Gh-1B17_s00001", "Gh-2C17_s00015" , "Gt-4e_s00053",
+                          "Gt-4e_s00062", "Gt-4e_s00063", "Gt-4e_s00064",
+                          "Gt14LH10_s00079", "Gt-23d_s00102", "Gt-23d_s00109"),
+         category == "cap") %>%
+  mutate(gene=sub("Gt14", "Gt-", gene)) %>%
+  pull(gene)
 
-#Format tip labels
-tyr.metadata <- tyr.metadata %>%
-  mutate(new.label=paste0('italic("', species, '")'),
+
+#Get metadata
+tyr.metadata <- read.csv(paste0(dir.comp, "tyr_genetree/metadata_tyr.csv")) %>%
+  mutate(new.label=ifelse(own != "Y",
+                          paste0('italic("', species, '"), " ', gene, '"'),
+                          paste0('"', gene, '"')),
          new.label=ifelse(grepl("sp\\.", new.label),
                           sub(' sp\\.")', '"), " sp\\."', new.label),
                           new.label),
-         new.label=ifelse(gene != "",
+         new.label=ifelse(gene != "" & is.na(own),
                           paste0(new.label, ', " ', gene, '"'),
                           new.label),
          new.label=ifelse(own == "Y",
-                          sub("italic", "bolditalic", paste0('bold(paste(', new.label, '))')),
+                          paste0('bold(paste(', new.label, '))'),
                           paste0('paste(', new.label, ')')),
+         new.label=ifelse(gene %in% suspect.caps,
+                          sub('"))$', ' †"))', new.label),
+                          new.label),
          type="published cap",
          type=ifelse(starfish == "captain" & manual == "captain", "cap", type),
          type=ifelse(starfish == "captain" & manual != "captain", "starfish cap", type),
@@ -2723,21 +2879,30 @@ gg.tyr.tree <- ggtree(tyr.tree, linetype=NA) %<+% tyr.metadata +
                 size=1,
                 stroke=0.3,
                 shape=21, colour="dimgrey") +
-  scale_fill_manual(breaks=c("published cap", "cap", "starfish cap", "manual cap", "starfish tyr, manual cap", "starfish tyr"),
-                    values=c("darkgrey", "black", "red", "#FFAD48", "khaki1", "white")) +
+  scale_fill_manual(breaks=c("published cap", "cap", "starfish cap",
+                             "starfish tyr, manual cap", "manual cap", "starfish tyr"),
+                    values=c("darkgrey", "black", "red",
+                             "#FFAD48", "khaki", "white")) +
   guides(fill=guide_legend(override.aes=list(size=1.3, stroke=0.5))) +
   coord_cartesian(clip="off") +
   annotation_custom(starship.euler.grob, xmin=0.1, xmax=1.8, ymin=95, ymax=130) +
   theme(legend.position=c(0.25, 0.95),
         legend.title=element_blank(),
-        legend.text=element_text(size=6, margin=margin(0, 0, 0, -5)),
+        legend.text=element_text(size=6, margin=margin(0, 0, 0, 0)),
         legend.key.size=unit(0.2, "cm"),
         legend.margin=margin(0, 0, 0, 0, unit="pt"))
 
 #Write to file
-pdf(paste0(dir.comp, "starships-", Sys.Date(), ".pdf"), width=7, height=6)
-plot_grid(gg.tyr.tree, gg.starship.schematic, nrow=1, rel_widths=c(3, 4), labels="auto")
-dev.off()
+#pdf(paste0(dir.comp, "starships-", Sys.Date(), ".pdf"), width=7, height=9)
+plot_grid(
+  plot_grid(
+    rel_heights=c(1,2), ncol=1, labels=c("a", ""),
+    plot_grid(strip.labels, gg.starships.ideogram, rel_widths=c(0.15, 1)),
+    plot_grid(gg.tyr.tree, gg.starship.schematic, nrow=1, rel_widths=c(3, 4), labels=c("b", "c")) 
+  )
+)
+#dev.off()
+
 
 ################################################################################
 
