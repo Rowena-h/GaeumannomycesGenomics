@@ -3,11 +3,11 @@
 ![Workflow schematic](schematic.png)
 
 Bioinformatics workflow for:
-> Hill et al. (2024) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*. biorxiv. [doi:10.1101/2024.02.15.580261](https://www.biorxiv.org/content/10.1101/2024.02.15.580261v1)
+> Hill et al. (2025) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*. BMC Genomics. [doi:10.1186/s12864-025-11432-0](https://doi.org/10.1186/s12864-025-11432-0)
 
 The pipeline was written for and run on Norwich BioScience Institutes' HPC cluster which uses the SLURM batch-queue system. This means that many of the bash scripts (`.sh` file endings) specify core allocation, run times and memory usage allocation that may need to be adapted for different platforms.
 
-Associated data files: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10277622.svg)](https://doi.org/10.5281/zenodo.10277622)
+Associated data files: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14823851.svg)](https://doi.org/10.5281/zenodo.14823851)
 
 ---
 
@@ -131,4 +131,4 @@ This folder contains a file - `markers` - listing the genetic markers selected f
 
 ## Citation
 
-> Hill et al. (2024) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*. biorxiv. [doi:10.1101/2024.02.15.580261](https://www.biorxiv.org/content/10.1101/2024.02.15.580261v1)
+> Hill et al. (2025) Evolutionary genomics reveals variation in structure and genetic content implicated in virulence and lifestyle in the genus *Gaeumannomyces*. BMC Genomics. [doi:10.1186/s12864-025-11432-0](https://doi.org/10.1186/s12864-025-11432-0)
